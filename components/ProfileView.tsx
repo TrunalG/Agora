@@ -242,39 +242,29 @@ export function ProfileView({
 
           {/* Profile Strength / Setup Guide */}
           {completion < 100 && (
-            <div className="bg-linear-to-br from-card to-muted/20 rounded-2xl border border-border p-6 space-y-4 shadow-sm relative overflow-hidden">
+            <div className="bg-card rounded-xl border border-border p-5 space-y-4 shadow-xs">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 bg-amber-500/10 rounded-xl">
-                    <Sparkles className="size-5 text-amber-500 animate-pulse" />
-                  </div>
-                  <div>
-                    <h2 className="font-bold text-foreground text-base">Profile Setup Guide</h2>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">Complete these key steps to maximize your skill matching potential and rank higher on Explore.</p>
-                  </div>
+                <div className="space-y-0.5">
+                  <h2 className="font-bold text-foreground text-sm">Profile Setup Guide</h2>
+                  <p className="text-xs text-muted-foreground">Complete these key steps to maximize your skill matching potential and rank higher on Explore.</p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
-                    Action Required
-                  </span>
-                  <span className="text-sm font-extrabold text-foreground bg-secondary/80 px-3 py-1 rounded-full">
+                  <span className="text-[10px] font-bold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full border border-primary/20">
                     {completion}% Complete
                   </span>
                 </div>
               </div>
 
-              {/* Premium Animated Progress Bar */}
-              <div className="space-y-1">
-                <div className="h-2 w-full overflow-hidden rounded-full bg-muted relative">
-                  <div
-                    className="h-full bg-linear-to-r from-amber-500 via-primary to-emerald-500 transition-all duration-500 rounded-full"
-                    style={{ width: `${completion}%` }}
-                  />
-                </div>
+              {/* Clean Solid Progress Bar */}
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+                <div
+                  className="h-full bg-primary transition-all duration-500 rounded-full"
+                  style={{ width: `${completion}%` }}
+                />
               </div>
 
               {/* Redesigned Checklist Grid */}
-              <div className="grid gap-3 sm:grid-cols-2 pt-2">
+              <div className="grid gap-2.5 sm:grid-cols-2 pt-1">
                 {getProfileChecklist(form).map((item) => {
                   const isDone = item.complete
                   return (
@@ -283,30 +273,30 @@ export function ProfileView({
                       type="button"
                       disabled={isDone}
                       onClick={() => handleChecklistItemClick(item.id)}
-                      className={`flex items-start text-left gap-3 rounded-xl border p-3.5 text-xs transition-all duration-200 w-full ${
+                      className={`flex items-start text-left gap-3 rounded-xl border p-3 text-xs transition-all duration-150 w-full ${
                         isDone
-                          ? 'border-emerald-500/20 bg-emerald-500/5 text-emerald-800/80 dark:text-emerald-300/80 opacity-75'
-                          : 'border-border bg-card text-foreground hover:border-primary/40 hover:bg-primary/5 hover:-translate-y-0.5 cursor-pointer shadow-3xs active:scale-[0.99]'
+                          ? 'border-border bg-muted/10 text-muted-foreground/80 opacity-70 cursor-default'
+                          : 'border-border bg-card text-foreground hover:border-primary/40 hover:bg-primary/2.5 cursor-pointer shadow-3xs'
                       }`}
                     >
                       {/* Status Icon */}
-                      <div className={`mt-0.5 flex size-5.5 shrink-0 items-center justify-center rounded-full transition-colors ${
+                      <div className={`mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full transition-colors ${
                         isDone 
                           ? 'bg-emerald-500 text-white' 
-                          : 'bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400'
+                          : 'bg-secondary border border-border text-muted-foreground'
                       }`}>
-                        {isDone ? <Check className="size-3.5" strokeWidth={3} /> : <span className="text-[11px] font-extrabold">!</span>}
+                        {isDone ? <Check className="size-3" strokeWidth={3} /> : <span className="text-[10px] font-extrabold">!</span>}
                       </div>
 
                       {/* Content */}
                       <div className="flex-1 space-y-0.5">
                         <div className="flex items-center justify-between gap-1.5">
-                          <p className={`font-bold ${isDone ? 'line-through text-muted-foreground/75' : ''}`}>
+                          <p className={`font-bold ${isDone ? 'line-through text-muted-foreground/60' : ''}`}>
                             {item.label}
                           </p>
-                          {!isDone && <ChevronRight className="size-3.5 text-muted-foreground/60 shrink-0 group-hover:text-primary transition-colors" />}
+                          {!isDone && <ChevronRight className="size-3.5 text-muted-foreground/60 shrink-0" />}
                         </div>
-                        <p className="text-[11px] text-muted-foreground leading-normal">{item.hint}</p>
+                        <p className="text-[10px] text-muted-foreground leading-normal">{item.hint}</p>
                       </div>
                     </button>
                   )

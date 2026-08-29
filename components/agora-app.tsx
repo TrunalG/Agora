@@ -569,7 +569,8 @@ export default function AgoraApp() {
         const data = await res.json()
         setChatHistory((prev) => [...prev, data.message])
       } else {
-        notify('Failed to send message')
+        const data = await res.json()
+        notify(data.error || 'Failed to send message')
       }
     } catch {
       notify('Network error')
@@ -2128,17 +2129,17 @@ export default function AgoraApp() {
                               )}
                             </div>
 
-                            <div className="flex gap-2">
+                            <div className="flex gap-1.5 shrink-0 items-center">
                               {notif.type === 'connection_request' && (
                                 <>
                                   {isAccepted ? (
-                                    <div className="flex items-center gap-2.5">
-                                      <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 bg-emerald-500/10 px-2.5 py-1 rounded-lg">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5 bg-emerald-500/10 px-2 py-0.5 rounded-md">
                                         <Check className="size-3" strokeWidth={3} /> Connected
                                       </span>
                                       <button
                                         onClick={() => startConversation(triggerUser?.id || triggerUser?._id)}
-                                        className="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground hover:opacity-90 cursor-pointer"
+                                        className="rounded-md bg-primary px-2.5 py-1 text-[10px] font-bold text-primary-foreground hover:opacity-90 cursor-pointer"
                                       >
                                         Message
                                       </button>
@@ -2147,13 +2148,13 @@ export default function AgoraApp() {
                                     <>
                                       <button
                                         onClick={() => respondConnectionRequest(notif.referenceId, 'accept')}
-                                        className="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground hover:opacity-90 cursor-pointer"
+                                        className="rounded-md bg-primary px-2.5 py-1 text-[10px] font-bold text-primary-foreground hover:opacity-90 cursor-pointer"
                                       >
                                         Accept
                                       </button>
                                       <button
                                         onClick={() => respondConnectionRequest(notif.referenceId, 'reject')}
-                                        className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold hover:bg-muted text-foreground cursor-pointer"
+                                        className="rounded-md border border-border px-2.5 py-1 text-[10px] font-semibold hover:bg-muted text-foreground cursor-pointer"
                                       >
                                         Ignore
                                       </button>
@@ -2167,7 +2168,7 @@ export default function AgoraApp() {
                                     setActiveChat(notif.referenceId)
                                     navigateToView('Messages')
                                   }}
-                                  className="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground hover:opacity-90 cursor-pointer"
+                                  className="rounded-md bg-primary px-2.5 py-1 text-[10px] font-bold text-primary-foreground hover:opacity-90 cursor-pointer"
                                 >
                                   View Chat
                                 </button>
@@ -2188,7 +2189,7 @@ export default function AgoraApp() {
                                       // ignore
                                     }
                                   }}
-                                  className="text-[10px] text-muted-foreground hover:text-foreground font-semibold px-2 cursor-pointer"
+                                  className="text-[9px] text-muted-foreground hover:text-foreground font-semibold px-2 py-0.5 cursor-pointer border border-border/60 rounded-md hover:bg-muted/40"
                                 >
                                   Mark Read
                                 </button>
