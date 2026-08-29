@@ -130,6 +130,10 @@ export default function AgoraApp() {
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
+  // Local optimistic states to keep track of accepted/rejected requests instantly
+  const [acceptedRequests, setAcceptedRequests] = useState<Set<string>>(new Set())
+  const [rejectedRequests, setRejectedRequests] = useState<Set<string>>(new Set())
+
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -403,6 +407,18 @@ export default function AgoraApp() {
       setAuthMode('login')
       return
     }
+    // Optimistic UI update: instantly add a temporary pending request to outgoingRequests
+    const targetPerson = peopleList.find(p => p.id === targetId)
+    const tempRequest = {
+      id: `temp-${targetId}`,
+      senderId: me.id,
+      receiverId: targetId,
+      receiver: targetPerson ? { id: targetPerson.id, name: targetPerson.name, username: targetPerson.username, profileImage: targetPerson.image } : { id: targetId },
+      status: 'pending',
+      createdAt: new Date().toISOString()
+    }
+    setOutgoingRequests(prev => [...prev, tempRequest])
+
     try {
       const res = await fetch('/api/connections/request', {
         method: 'POST',
@@ -414,15 +430,23 @@ export default function AgoraApp() {
         notify('Connection request sent!')
         loadUserData()
       } else {
+        // Rollback on failure
+        setOutgoingRequests(prev => prev.filter(r => r.id !== `temp-${targetId}`))
         notify(data.error || 'Could not send request')
       }
     } catch {
+      // Rollback on failure
+      setOutgoingRequests(prev => prev.filter(r => r.id !== `temp-${targetId}`))
       notify('Network error')
     }
   }
 
   async function withdrawConnectionRequest(targetId: string) {
     if (auth === 'guest') return
+    // Optimistic UI update: instantly remove request from outgoingRequests
+    const removedRequest = outgoingRequests.find(r => r.receiverId === targetId || r.senderId === targetId)
+    setOutgoingRequests(prev => prev.filter(r => r.receiverId !== targetId && r.senderId !== targetId))
+
     try {
       const res = await fetch(`/api/connections/request?receiverId=${targetId}`, {
         method: 'DELETE',
@@ -432,14 +456,37 @@ export default function AgoraApp() {
         notify('Connection request withdrawn')
         loadUserData()
       } else {
+        // Rollback on failure
+        if (removedRequest) {
+          setOutgoingRequests(prev => [...prev, removedRequest])
+        }
         notify(data.error || 'Could not withdraw request')
       }
     } catch {
+      // Rollback on failure
+      if (removedRequest) {
+        setOutgoingRequests(prev => [...prev, removedRequest])
+      }
       notify('Network error')
     }
   }
 
   async function respondConnectionRequest(requestId: string, action: 'accept' | 'reject') {
+    // Optimistic UI update: immediately add the requestId to local sets to change status and message options
+    if (action === 'accept') {
+      setAcceptedRequests((prev) => {
+        const next = new Set(prev)
+        next.add(requestId)
+        return next
+      })
+    } else {
+      setRejectedRequests((prev) => {
+        const next = new Set(prev)
+        next.add(requestId)
+        return next
+      })
+    }
+
     try {
       const res = await fetch('/api/connections/request', {
         method: 'PUT',
@@ -451,9 +498,37 @@ export default function AgoraApp() {
         notify(action === 'accept' ? 'Connection request accepted!' : 'Request rejected')
         loadUserData()
       } else {
+        // Rollback on failure
+        if (action === 'accept') {
+          setAcceptedRequests((prev) => {
+            const next = new Set(prev)
+            next.delete(requestId)
+            return next
+          })
+        } else {
+          setRejectedRequests((prev) => {
+            const next = new Set(prev)
+            next.delete(requestId)
+            return next
+          })
+        }
         notify(data.error || 'Failed to update request')
       }
     } catch {
+      // Rollback on failure
+      if (action === 'accept') {
+        setAcceptedRequests((prev) => {
+          const next = new Set(prev)
+          next.delete(requestId)
+          return next
+        })
+      } else {
+        setRejectedRequests((prev) => {
+          const next = new Set(prev)
+          next.delete(requestId)
+          return next
+        })
+      }
       notify('Network error')
     }
   }
@@ -1666,36 +1741,55 @@ export default function AgoraApp() {
                   <div className="p-5">
                     {networkTab === 'received' && (
                       <div className="space-y-3">
-                        {incomingRequests.map((req) => (
-                          <div key={req.id} className="flex items-center justify-between rounded-xl border border-border p-4 shadow-2xs">
-                            <button onClick={() => setProfile(req.sender)} className="flex items-center gap-3 text-left">
-                              <Avatar person={{ name: req.sender?.name, username: req.sender?.username, image: req.sender?.profileImage }} />
-                              <div>
-                                <p className="text-xs font-bold text-foreground hover:underline">
-                                  {req.sender?.name || req.sender?.username}
-                                </p>
-                                <p className="text-[10px] text-muted-foreground mt-0.5">
-                                  @{req.sender?.username} · {req.sender?.country || 'Global'}
-                                </p>
+                        {incomingRequests
+                          .filter((req) => !rejectedRequests.has(req.id))
+                          .map((req) => {
+                            const isAccepted = acceptedRequests.has(req.id)
+                            return (
+                              <div key={req.id} className="flex items-center justify-between rounded-xl border border-border p-4 shadow-2xs">
+                                <button onClick={() => setProfile(req.sender)} className="flex items-center gap-3 text-left">
+                                  <Avatar person={{ name: req.sender?.name, username: req.sender?.username, image: req.sender?.profileImage }} />
+                                  <div>
+                                    <p className="text-xs font-bold text-foreground hover:underline">
+                                      {req.sender?.name || req.sender?.username}
+                                    </p>
+                                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                                      @{req.sender?.username} · {req.sender?.country || 'Global'}
+                                    </p>
+                                  </div>
+                                </button>
+                                {isAccepted ? (
+                                  <div className="flex items-center gap-3">
+                                    <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 bg-emerald-500/10 px-2.5 py-1 rounded-lg">
+                                      <Check className="size-3.5" strokeWidth={3} /> Connected
+                                    </span>
+                                    <button
+                                      onClick={() => startConversation(req.senderId)}
+                                      className="rounded-lg bg-primary px-3.5 py-1.5 text-xs font-bold text-primary-foreground hover:opacity-90 transition-opacity cursor-pointer animate-in zoom-in-95 duration-150"
+                                    >
+                                      Message
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <div className="flex gap-2">
+                                    <button
+                                      onClick={() => respondConnectionRequest(req.id, 'accept')}
+                                      className="rounded-lg bg-primary px-3.5 py-1.5 text-xs font-bold text-primary-foreground hover:opacity-90 transition-opacity cursor-pointer"
+                                    >
+                                      Accept
+                                    </button>
+                                    <button
+                                      onClick={() => respondConnectionRequest(req.id, 'reject')}
+                                      className="rounded-lg border border-border px-3.5 py-1.5 text-xs font-semibold hover:bg-muted text-foreground transition-colors cursor-pointer"
+                                    >
+                                      Ignore
+                                    </button>
+                                  </div>
+                                )}
                               </div>
-                            </button>
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => respondConnectionRequest(req.id, 'accept')}
-                                className="rounded-lg bg-primary px-3.5 py-1.5 text-xs font-bold text-primary-foreground hover:opacity-90 transition-opacity"
-                              >
-                                Accept
-                              </button>
-                              <button
-                                onClick={() => respondConnectionRequest(req.id, 'reject')}
-                                className="rounded-lg border border-border px-3.5 py-1.5 text-xs font-semibold hover:bg-muted text-foreground transition-colors"
-                              >
-                                Ignore
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                        {incomingRequests.length === 0 && (
+                            )
+                          })}
+                        {incomingRequests.filter((req) => !rejectedRequests.has(req.id)).length === 0 && (
                           <div className="text-center py-8 text-xs text-muted-foreground">
                             No received follow requests.
                           </div>
@@ -1959,97 +2053,150 @@ export default function AgoraApp() {
                   </div>
                 ) : (
                   <>
-                    {notificationsList.map((notif) => {
-                      const triggerUser = notif.triggerUser
-                      const initials = triggerUser ? (triggerUser.name || triggerUser.username || 'U').slice(0, 2).toUpperCase() : 'U'
+                    {notificationsList
+                      .filter((notif) => !rejectedRequests.has(notif.referenceId))
+                      .map((notif) => {
+                        const triggerUser = notif.triggerUser
+                        const initials = triggerUser ? (triggerUser.name || triggerUser.username || 'U').slice(0, 2).toUpperCase() : 'U'
+                        const isAccepted = acceptedRequests.has(notif.referenceId)
 
-                      return (
-                        <div
-                          key={notif.id}
-                          className={`flex items-center justify-between rounded-xl border p-4.5 shadow-2xs transition-all ${
-                            notif.read ? 'border-border bg-card' : 'border-primary/20 bg-primary/5'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3.5">
-                            {triggerUser ? (
-                              <Avatar person={{ name: triggerUser.name, username: triggerUser.username, image: triggerUser.profileImage }} />
-                            ) : (
-                              <div className={`size-9 rounded-full flex items-center justify-center font-bold text-xs ${me.tone || 'bg-accent text-accent-foreground'}`}>
-                                {initials}
-                              </div>
-                            )}
-                            <div>
-                              <p className="text-xs text-foreground">
-                                {triggerUser ? (
-                                  <span className="font-bold">{triggerUser.name || triggerUser.username} </span>
-                                ) : (
-                                  <span className="font-bold">Someone </span>
-                                )}
-                                <span className="text-muted-foreground">
-                                  {notif.type === 'connection_request' && 'sent you a follow request.'}
-                                  {notif.type === 'connection_accepted' && 'accepted your follow request.'}
-                                  {notif.type === 'new_message' && 'sent you a new message.'}
-                                </span>
-                              </p>
-                              <p className="text-[10px] text-muted-foreground mt-0.5">
-                                {new Date(notif.createdAt).toLocaleDateString()} · {new Date(notif.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                              </p>
+                        return (
+                          <div
+                            key={notif.id}
+                            className={`flex items-center justify-between rounded-xl border p-4.5 shadow-2xs transition-all ${
+                              notif.read ? 'border-border bg-card' : 'border-primary/20 bg-primary/5'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3.5">
+                              {triggerUser ? (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const triggerPerson = {
+                                      id: triggerUser.id || triggerUser._id,
+                                      name: triggerUser.name || triggerUser.username,
+                                      username: triggerUser.username,
+                                      role: triggerUser.role || (triggerUser.skillsToTeach?.[0] ? `${triggerUser.skillsToTeach[0]} Mentor` : 'Member'),
+                                      location: triggerUser.location || triggerUser.country || 'Anywhere',
+                                      initials: triggerUser.initials || (triggerUser.name || triggerUser.username || 'U').slice(0, 2).toUpperCase(),
+                                      tone: 'bg-accent text-accent-foreground',
+                                      teaches: triggerUser.teaches || triggerUser.skillsToTeach || [],
+                                      learns: triggerUser.learns || triggerUser.skillsToLearn || [],
+                                      about: triggerUser.about || triggerUser.bio || '',
+                                      image: triggerUser.image || triggerUser.profileImage || '',
+                                      links: triggerUser.links || [],
+                                      connectionsCount: triggerUser.connectionsCount || 0,
+                                    }
+                                    setProfile(triggerPerson)
+                                  }}
+                                  className="flex items-center gap-3.5 text-left hover:underline group cursor-pointer"
+                                >
+                                  <Avatar person={{ name: triggerUser.name, username: triggerUser.username, image: triggerUser.profileImage }} />
+                                  <div>
+                                    <p className="text-xs text-foreground">
+                                      <span className="font-bold group-hover:text-primary transition-colors">{triggerUser.name || triggerUser.username} </span>
+                                      <span className="text-muted-foreground">
+                                        {notif.type === 'connection_request' && 'sent you a follow request.'}
+                                        {notif.type === 'connection_accepted' && 'accepted your follow request.'}
+                                        {notif.type === 'new_message' && 'sent you a new message.'}
+                                      </span>
+                                    </p>
+                                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                                      {new Date(notif.createdAt).toLocaleDateString()} · {new Date(notif.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </p>
+                                  </div>
+                                </button>
+                              ) : (
+                                <>
+                                  <div className={`size-9 rounded-full flex items-center justify-center font-bold text-xs ${me.tone || 'bg-accent text-accent-foreground'}`}>
+                                    {initials}
+                                  </div>
+                                  <div>
+                                    <p className="text-xs text-foreground">
+                                      <span className="font-bold">Someone </span>
+                                      <span className="text-muted-foreground">
+                                        {notif.type === 'connection_request' && 'sent you a follow request.'}
+                                        {notif.type === 'connection_accepted' && 'accepted your follow request.'}
+                                        {notif.type === 'new_message' && 'sent you a new message.'}
+                                      </span>
+                                    </p>
+                                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                                      {new Date(notif.createdAt).toLocaleDateString()} · {new Date(notif.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </p>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+
+                            <div className="flex gap-2">
+                              {notif.type === 'connection_request' && (
+                                <>
+                                  {isAccepted ? (
+                                    <div className="flex items-center gap-2.5">
+                                      <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 bg-emerald-500/10 px-2.5 py-1 rounded-lg">
+                                        <Check className="size-3" strokeWidth={3} /> Connected
+                                      </span>
+                                      <button
+                                        onClick={() => startConversation(triggerUser?.id || triggerUser?._id)}
+                                        className="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground hover:opacity-90 cursor-pointer"
+                                      >
+                                        Message
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <>
+                                      <button
+                                        onClick={() => respondConnectionRequest(notif.referenceId, 'accept')}
+                                        className="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground hover:opacity-90 cursor-pointer"
+                                      >
+                                        Accept
+                                      </button>
+                                      <button
+                                        onClick={() => respondConnectionRequest(notif.referenceId, 'reject')}
+                                        className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold hover:bg-muted text-foreground cursor-pointer"
+                                      >
+                                        Ignore
+                                      </button>
+                                    </>
+                                  )}
+                                </>
+                              )}
+                              {notif.type === 'new_message' && (
+                                <button
+                                  onClick={() => {
+                                    setActiveChat(notif.referenceId)
+                                    navigateToView('Messages')
+                                  }}
+                                  className="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground hover:opacity-90 cursor-pointer"
+                                >
+                                  View Chat
+                                </button>
+                              )}
+                              {!notif.read && notif.type !== 'connection_request' && (
+                                <button
+                                  onClick={async () => {
+                                    try {
+                                      const res = await fetch('/api/notifications', {
+                                        method: 'PATCH',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ notificationId: notif.id }),
+                                      })
+                                      if (res.ok) {
+                                        loadUserData()
+                                      }
+                                    } catch {
+                                      // ignore
+                                    }
+                                  }}
+                                  className="text-[10px] text-muted-foreground hover:text-foreground font-semibold px-2 cursor-pointer"
+                                >
+                                  Mark Read
+                                </button>
+                              )}
                             </div>
                           </div>
-
-                          <div className="flex gap-2">
-                            {notif.type === 'connection_request' && (
-                              <>
-                                <button
-                                  onClick={() => respondConnectionRequest(notif.referenceId, 'accept')}
-                                  className="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground hover:opacity-90"
-                                >
-                                  Accept
-                                </button>
-                                <button
-                                  onClick={() => respondConnectionRequest(notif.referenceId, 'reject')}
-                                  className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold hover:bg-muted text-foreground"
-                                >
-                                  Ignore
-                                </button>
-                              </>
-                            )}
-                            {notif.type === 'new_message' && (
-                              <button
-                                onClick={() => {
-                                  setActiveChat(notif.referenceId)
-                                  navigateToView('Messages')
-                                }}
-                                className="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground hover:opacity-90"
-                              >
-                                View Chat
-                              </button>
-                            )}
-                            {!notif.read && (
-                              <button
-                                onClick={async () => {
-                                  try {
-                                    const res = await fetch('/api/notifications', {
-                                      method: 'PATCH',
-                                      headers: { 'Content-Type': 'application/json' },
-                                      body: JSON.stringify({ notificationId: notif.id }),
-                                    })
-                                    if (res.ok) {
-                                      loadUserData()
-                                    }
-                                  } catch {
-                                    // ignore
-                                  }
-                                }}
-                                className="text-[10px] text-muted-foreground hover:text-foreground font-semibold px-2"
-                              >
-                                Mark Read
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      )
-                    })}
+                        )
+                      })}
 
                     {notificationsList.length === 0 && (
                       <div className="rounded-xl border border-border bg-card p-12 text-center text-xs text-muted-foreground shadow-2xs">
