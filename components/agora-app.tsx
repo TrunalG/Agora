@@ -112,6 +112,9 @@ export default function AgoraApp() {
   const [activePartnerModal, setActivePartnerModal] = useState<Person | null>(null)
   const [meDropdownOpen, setMeDropdownOpen] = useState(false)
   const [messagingDrawerOpen, setMessagingDrawerOpen] = useState(false)
+  const [drawerActiveChat, setDrawerActiveChat] = useState<string | null>(null)
+  const [drawerChatHistory, setDrawerChatHistory] = useState<any[]>([])
+  const [drawerChatMessage, setDrawerChatMessage] = useState('')
   const dropdownRef = useRef<HTMLDivElement>(null)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -298,7 +301,7 @@ export default function AgoraApp() {
 
       if (blockRes.ok) {
         const data = await blockRes.json()
-        setBlockedUsers(data.blockedUsers || [])
+        setBlockedUsers(data.blocked || [])
       }
     } catch {
       // ignore
@@ -311,7 +314,7 @@ export default function AgoraApp() {
 
   useEffect(() => {
     async function loadConversations() {
-      if (auth !== 'logged' || view !== 'Messages') return
+      if (auth !== 'logged') return
       try {
         const res = await fetch('/api/conversations')
         if (res.ok) {
@@ -323,7 +326,32 @@ export default function AgoraApp() {
       }
     }
     loadConversations()
-  }, [auth, view])
+    const interval = setInterval(loadConversations, 10000)
+    return () => clearInterval(interval)
+  }, [auth])
+
+  useEffect(() => {
+    async function loadDrawerChatMessages() {
+      if (!drawerActiveChat) {
+        setDrawerChatHistory([])
+        return
+      }
+      try {
+        const res = await fetch(`/api/messages?conversationId=${drawerActiveChat}`)
+        if (res.ok) {
+          const data = await res.json()
+          setDrawerChatHistory(data.messages || [])
+        }
+      } catch {
+        // ignore
+      }
+    }
+    loadDrawerChatMessages()
+    if (drawerActiveChat) {
+      const interval = setInterval(loadDrawerChatMessages, 4000)
+      return () => clearInterval(interval)
+    }
+  }, [drawerActiveChat])
 
   useEffect(() => {
     async function loadChatMessages() {
@@ -343,11 +371,20 @@ export default function AgoraApp() {
 
   const completion = useMemo(() => getProfileCompletion(myProfileData), [myProfileData])
 
+  const blockedUserIds = useMemo(() => new Set(blockedUsers.map((b: any) => b.id)), [blockedUsers])
+
+  const filteredConnections = useMemo(() => {
+    return connections.filter(c => !blockedUserIds.has(c.partnerId))
+  }, [connections, blockedUserIds])
+
+  const filteredConnectionsCount = filteredConnections.length
+
   const shown = useMemo(() => {
-    const connectedPartnerIds = new Set(connections.map((c) => c.partnerId))
+    const connectedPartnerIds = new Set(filteredConnections.map((c) => c.partnerId))
 
     const filtered = peopleList.filter((p) => {
       if (p.id === me.id) return false
+      if (blockedUserIds.has(p.id)) return false
       if (connectedPartnerIds.has(p.id)) return false
       if (country !== 'Anywhere' && p.location !== country) return false
 
@@ -374,7 +411,7 @@ export default function AgoraApp() {
 
     // Sort by match score descending to prioritize Strong Matches at the top of the grid
     return [...filtered].sort((a, b) => getMatchScore(me, b) - getMatchScore(me, a))
-  }, [peopleList, me, query, filter, country, connections])
+  }, [peopleList, me, query, filter, country, filteredConnections, blockedUserIds])
 
   // Helper to check if follow request is pending
   const isRequestPending = (personId: string) => {
@@ -568,6 +605,33 @@ export default function AgoraApp() {
         setChatMessage('')
         const data = await res.json()
         setChatHistory((prev) => [...prev, data.message])
+      } else {
+        const data = await res.json()
+        notify(data.error || 'Failed to send message')
+      }
+    } catch {
+      notify('Network error')
+    }
+  }
+
+  async function sendDrawerMessage() {
+    if (!drawerActiveChat || !drawerChatMessage.trim()) return
+    const content = drawerChatMessage.trim()
+    try {
+      const res = await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ conversationId: drawerActiveChat, content }),
+      })
+      if (res.ok) {
+        setDrawerChatMessage('')
+        const data = await res.json()
+        setDrawerChatHistory((prev) => [...prev, data.message])
+        const convRes = await fetch('/api/conversations')
+        if (convRes.ok) {
+          const convData = await convRes.json()
+          setConversationsList(convData.conversations || [])
+        }
       } else {
         const data = await res.json()
         notify(data.error || 'Failed to send message')
@@ -1859,6 +1923,8 @@ export default function AgoraApp() {
                   <div className="flex-1 overflow-y-auto p-2 space-y-1">
                     {conversationsList
                       .filter((conv) => {
+                        const partnerId = conv.participant?.id || conv.participant?._id
+                        if (partnerId && blockedUserIds.has(partnerId)) return false
                         const name = conv.participant?.name || ''
                         const username = conv.participant?.username || ''
                         const q = searchChatQuery.toLowerCase()
@@ -2024,27 +2090,6 @@ export default function AgoraApp() {
             <section className="mx-auto max-w-3xl space-y-5">
               <div className="flex items-center justify-between">
                 <h1 className="text-lg font-bold text-foreground tracking-tight">Notifications & Activity</h1>
-                {notificationsList.length > 0 && (
-                  <button
-                    onClick={async () => {
-                      try {
-                        const res = await fetch('/api/notifications', {
-                          method: 'PATCH',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ markAllRead: true }),
-                        })
-                        if (res.ok) {
-                          loadUserData()
-                        }
-                      } catch {
-                        // ignore
-                      }
-                    }}
-                    className="text-xs font-semibold text-primary hover:underline"
-                  >
-                    Mark all as read
-                  </button>
-                )}
               </div>
 
               <div className="space-y-3">
@@ -2059,7 +2104,8 @@ export default function AgoraApp() {
                       .map((notif) => {
                         const triggerUser = notif.triggerUser
                         const initials = triggerUser ? (triggerUser.name || triggerUser.username || 'U').slice(0, 2).toUpperCase() : 'U'
-                        const isAccepted = acceptedRequests.has(notif.referenceId)
+                        const isAccepted = acceptedRequests.has(notif.referenceId) ||
+                          (triggerUser && filteredConnections.some((c) => c.partnerId === (triggerUser.id || triggerUser._id)))
 
                         return (
                           <div
@@ -2139,7 +2185,7 @@ export default function AgoraApp() {
                                       </span>
                                       <button
                                         onClick={() => startConversation(triggerUser?.id || triggerUser?._id)}
-                                        className="rounded-md bg-primary px-2.5 py-1 text-[10px] font-bold text-primary-foreground hover:opacity-90 cursor-pointer"
+                                        className="rounded-md bg-primary px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-xs font-bold text-primary-foreground hover:opacity-90 cursor-pointer shadow-3xs animate-in zoom-in-95 duration-100"
                                       >
                                         Message
                                       </button>
@@ -2148,13 +2194,13 @@ export default function AgoraApp() {
                                     <>
                                       <button
                                         onClick={() => respondConnectionRequest(notif.referenceId, 'accept')}
-                                        className="rounded-md bg-primary px-2.5 py-1 text-[10px] font-bold text-primary-foreground hover:opacity-90 cursor-pointer"
+                                        className="rounded-md bg-primary px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-xs font-bold text-primary-foreground hover:opacity-90 cursor-pointer shadow-3xs"
                                       >
                                         Accept
                                       </button>
                                       <button
                                         onClick={() => respondConnectionRequest(notif.referenceId, 'reject')}
-                                        className="rounded-md border border-border px-2.5 py-1 text-[10px] font-semibold hover:bg-muted text-foreground cursor-pointer"
+                                        className="rounded-md border border-border px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-xs font-semibold hover:bg-muted text-foreground cursor-pointer transition-colors"
                                       >
                                         Ignore
                                       </button>
@@ -2168,30 +2214,9 @@ export default function AgoraApp() {
                                     setActiveChat(notif.referenceId)
                                     navigateToView('Messages')
                                   }}
-                                  className="rounded-md bg-primary px-2.5 py-1 text-[10px] font-bold text-primary-foreground hover:opacity-90 cursor-pointer"
+                                  className="rounded-md bg-primary px-2.5 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-xs font-bold text-primary-foreground hover:opacity-90 cursor-pointer shadow-3xs"
                                 >
                                   View Chat
-                                </button>
-                              )}
-                              {!notif.read && notif.type !== 'connection_request' && (
-                                <button
-                                  onClick={async () => {
-                                    try {
-                                      const res = await fetch('/api/notifications', {
-                                        method: 'PATCH',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({ notificationId: notif.id }),
-                                      })
-                                      if (res.ok) {
-                                        loadUserData()
-                                      }
-                                    } catch {
-                                      // ignore
-                                    }
-                                  }}
-                                  className="text-[9px] text-muted-foreground hover:text-foreground font-semibold px-2 py-0.5 cursor-pointer border border-border/60 rounded-md hover:bg-muted/40"
-                                >
-                                  Mark Read
                                 </button>
                               )}
                             </div>
@@ -2216,8 +2241,8 @@ export default function AgoraApp() {
               auth={auth}
               data={myProfileData}
               completion={completion}
-              connectionsCount={connectionsCount}
-              connections={connections}
+              connectionsCount={filteredConnectionsCount}
+              connections={filteredConnections}
               setAuthMode={setAuthMode}
               setView={navigateToView}
               onSave={saveProfile}
@@ -2298,30 +2323,124 @@ export default function AgoraApp() {
         </button>
 
         {messagingDrawerOpen && (
-          <div className="h-80 flex flex-col bg-card">
-            <div className="flex-1 overflow-y-auto p-1 divide-y divide-border">
-              {conversationsList.map((conv) => (
-                <div
-                  key={conv.id}
-                  onClick={() => {
-                    setActiveChat(conv.id)
-                    navigateToView('Messages')
-                  }}
-                  className="flex items-center gap-3 p-2.5 hover:bg-muted/40 cursor-pointer text-xs rounded-lg transition-colors"
-                >
-                  <Avatar person={{ name: conv.participant?.name, image: conv.participant?.profileImage }} />
-                  <div className="flex-1 overflow-hidden">
-                    <p className="font-bold text-foreground truncate">{conv.participant?.name || 'User'}</p>
-                    <p className="text-[10px] text-muted-foreground truncate">{conv.lastMessage?.content || 'Continue messaging'}</p>
+          <div className="h-85 flex flex-col bg-card">
+            {drawerActiveChat ? (
+              (() => {
+                const activeConv = conversationsList.find((c) => c.id === drawerActiveChat)
+                return activeConv ? (
+                  <>
+                    {/* Chat Header */}
+                    <div className="flex items-center justify-between p-2.5 border-b border-border bg-slate-50 dark:bg-slate-900/10">
+                      <button
+                        onClick={() => setDrawerActiveChat(null)}
+                        className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground cursor-pointer"
+                      >
+                        <ArrowLeft className="size-3" />
+                        <span>Back</span>
+                      </button>
+                      <div className="flex items-center gap-1.5 overflow-hidden">
+                        <Avatar person={{ name: activeConv.participant?.name, image: activeConv.participant?.profileImage }} />
+                        <span className="font-bold text-[10px] text-foreground truncate max-w-[90px]">
+                          {activeConv.participant?.name || 'User'}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setDrawerActiveChat(null)
+                          setMessagingDrawerOpen(false)
+                        }}
+                        className="p-1 rounded-md text-muted-foreground hover:text-foreground cursor-pointer"
+                      >
+                        <X className="size-3" />
+                      </button>
+                    </div>
+
+                    {/* Chat Messages Body */}
+                    <div className="flex-1 overflow-y-auto p-3.5 space-y-2 bg-slate-50/20 dark:bg-slate-900/5">
+                      {drawerChatHistory.map((msg) => {
+                        const isMe = msg.senderId === me.id
+                        return (
+                          <div
+                            key={msg.id}
+                            className={`flex flex-col max-w-[85%] ${
+                              isMe ? 'ml-auto items-end' : 'mr-auto items-start'
+                            }`}
+                          >
+                            <div
+                              className={`rounded-lg px-2.5 py-1.5 text-[11px] leading-snug ${
+                                isMe
+                                  ? 'bg-primary text-primary-foreground font-semibold rounded-br-none shadow-3xs'
+                                  : 'bg-muted text-foreground rounded-bl-none border border-border/40'
+                              }`}
+                            >
+                              {msg.content}
+                            </div>
+                          </div>
+                        )
+                      })}
+                      {drawerChatHistory.length === 0 && (
+                        <div className="text-center py-12 text-[10px] text-muted-foreground">
+                          No messages yet. Say hello!
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Chat Composer Footer */}
+                    <div className="p-2 border-t border-border bg-card flex gap-1.5">
+                      <input
+                        type="text"
+                        placeholder="Type a message..."
+                        value={drawerChatMessage}
+                        onChange={(e) => setDrawerChatMessage(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && sendDrawerMessage()}
+                        className="h-8 flex-1 rounded-lg border border-input bg-background px-3 text-[11px] outline-none focus:ring-1 focus:ring-primary/20"
+                      />
+                      <button
+                        onClick={sendDrawerMessage}
+                        className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground hover:opacity-90 transition-opacity cursor-pointer"
+                      >
+                        <Send className="size-3.5" />
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="p-6 text-center text-xs text-muted-foreground">
+                    Chat not found.
                   </div>
-                </div>
-              ))}
-              {conversationsList.length === 0 && (
-                <div className="p-6 text-center text-xs text-muted-foreground">
-                  No active messaging threads yet.
-                </div>
-              )}
-            </div>
+                )
+              })()
+            ) : (
+              <div className="flex-1 overflow-y-auto p-1 divide-y divide-border">
+                {conversationsList
+                  .filter((conv) => {
+                    const partnerId = conv.participant?.id || conv.participant?._id
+                    return !partnerId || !blockedUserIds.has(partnerId)
+                  })
+                  .map((conv) => (
+                    <div
+                      key={conv.id}
+                      onClick={() => {
+                        setDrawerActiveChat(conv.id)
+                      }}
+                      className="flex items-center gap-3 p-2.5 hover:bg-muted/40 cursor-pointer text-xs rounded-lg transition-colors"
+                    >
+                      <Avatar person={{ name: conv.participant?.name, image: conv.participant?.profileImage }} />
+                      <div className="flex-1 overflow-hidden">
+                        <p className="font-bold text-foreground truncate">{conv.participant?.name || 'User'}</p>
+                        <p className="text-[10px] text-muted-foreground truncate">{conv.lastMessage?.content || 'Continue messaging'}</p>
+                      </div>
+                    </div>
+                  ))}
+                {conversationsList.filter((c) => {
+                  const partnerId = c.participant?.id || c.participant?._id
+                  return !partnerId || !blockedUserIds.has(partnerId)
+                }).length === 0 && (
+                  <div className="p-6 text-center text-xs text-muted-foreground">
+                    No active messaging threads yet.
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
