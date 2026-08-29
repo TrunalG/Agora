@@ -125,6 +125,11 @@ export default function AgoraApp() {
   const [inlineNewPassword, setInlineNewPassword] = useState('')
   const [inlineConfirmPassword, setInlineConfirmPassword] = useState('')
 
+  // Password visibility states
+  const [showPassword, setShowPassword] = useState(false)
+  const [showNewPassword, setShowNewPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -547,6 +552,18 @@ export default function AgoraApp() {
     setMe(defaultGuest)
     setView('Explore')
     notify('Logged out successfully')
+    // Clear all auth credentials and reset view state on logout
+    setEmail('')
+    setPassword('')
+    setInlineAuthMode('login')
+    setInlineError('')
+    setInlineOtpCode('')
+    setInlineOtpMessage('')
+    setInlineNewPassword('')
+    setInlineConfirmPassword('')
+    setShowPassword(false)
+    setShowNewPassword(false)
+    setShowConfirmPassword(false)
   }
 
   async function handleUnblock(blockedId: string) {
@@ -604,7 +621,7 @@ export default function AgoraApp() {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
       })
       const data = await res.json()
       setInlineLoading(false)
@@ -620,6 +637,9 @@ export default function AgoraApp() {
       loadUserData()
       notify('Welcome to Agora!')
       setInlineAuthMode('login')
+      setEmail('')
+      setPassword('')
+      setShowPassword(false)
     } catch (err: any) {
       setInlineLoading(false)
       setInlineError(err.message || 'Server connection error')
@@ -633,7 +653,7 @@ export default function AgoraApp() {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'send-otp', email, password }),
+        body: JSON.stringify({ action: 'send-otp', email: email.trim().toLowerCase(), password }),
       })
       const data = await res.json()
       setInlineLoading(false)
@@ -641,6 +661,7 @@ export default function AgoraApp() {
         setInlineError(data.error || 'Failed to send verification code')
         return
       }
+      setInlineOtpCode('') // Clear any old OTP input
       setInlineOtpMessage(data.message || `Verification code sent to ${email}`)
       setInlineAuthMode('otp')
       notify('Verification OTP sent!')
@@ -657,7 +678,7 @@ export default function AgoraApp() {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'verify-otp', email, otp: inlineOtpCode }),
+        body: JSON.stringify({ action: 'verify-otp', email: email.trim().toLowerCase(), otp: inlineOtpCode.trim() }),
       })
       const data = await res.json()
       setInlineLoading(false)
@@ -673,6 +694,10 @@ export default function AgoraApp() {
       loadUserData()
       setAuthMode('onboarding')
       notify('Registration complete! Please finish onboarding.')
+      setEmail('')
+      setPassword('')
+      setInlineOtpCode('')
+      setShowPassword(false)
     } catch (err: any) {
       setInlineLoading(false)
       setInlineError(err.message || 'Server connection error')
@@ -686,7 +711,7 @@ export default function AgoraApp() {
       const res = await fetch('/api/auth/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'send-otp', email }),
+        body: JSON.stringify({ action: 'send-otp', email: email.trim().toLowerCase() }),
       })
       const data = await res.json()
       setInlineLoading(false)
@@ -694,6 +719,7 @@ export default function AgoraApp() {
         setInlineError(data.error || 'Failed to send reset code')
         return
       }
+      setInlineOtpCode('') // Clear any old OTP input
       setInlineOtpMessage(data.message || `Password reset code sent to ${email}`)
       setInlineAuthMode('forgot-password-otp')
       notify('Password reset OTP sent!')
@@ -716,8 +742,8 @@ export default function AgoraApp() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'reset-password',
-          email,
-          otp: inlineOtpCode,
+          email: email.trim().toLowerCase(),
+          otp: inlineOtpCode.trim(),
           newPassword: inlineNewPassword,
         }),
       })
@@ -732,6 +758,8 @@ export default function AgoraApp() {
       setInlineOtpCode('')
       setInlineNewPassword('')
       setInlineConfirmPassword('')
+      setShowNewPassword(false)
+      setShowConfirmPassword(false)
     } catch (err: any) {
       setInlineLoading(false)
       setInlineError(err.message || 'Server connection error')
@@ -799,7 +827,13 @@ export default function AgoraApp() {
 
               {/* 1. Login View */}
               {inlineAuthMode === 'login' && (
-                <div className="space-y-4 pt-2 animate-in fade-in duration-200">
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    if (!inlineLoading && email && password) handleInlineLogin()
+                  }}
+                  className="space-y-4 pt-2 animate-in fade-in duration-200"
+                >
                   {inlineError && (
                     <div className="rounded-lg bg-destructive/10 p-3 text-xs text-destructive font-medium border border-destructive/20">
                       {inlineError}
@@ -813,6 +847,8 @@ export default function AgoraApp() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="h-10 w-full rounded-lg border border-input bg-card px-3 text-xs outline-none focus:ring-1.5 focus:ring-primary/30"
+                      autoComplete="email"
+                      required
                     />
                   </div>
                   <div className="space-y-1">
@@ -823,34 +859,52 @@ export default function AgoraApp() {
                         onClick={() => {
                           setInlineAuthMode('forgot-password')
                           setInlineError('')
+                          setPassword('')
                         }}
-                        className="text-[10px] text-primary font-bold hover:underline"
+                        className="text-[10px] text-primary font-bold hover:underline cursor-pointer"
                       >
                         Forgot Password?
                       </button>
                     </div>
-                    <input
-                      type="password"
-                      placeholder="••••••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="h-10 w-full rounded-lg border border-input bg-card px-3 text-xs outline-none focus:ring-1.5 focus:ring-primary/30"
-                    />
+                    <div className="relative">
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder="••••••••••••"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="h-10 w-full rounded-lg border border-input bg-card pl-3 pr-10 text-xs outline-none focus:ring-1.5 focus:ring-primary/30"
+                        autoComplete="current-password"
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer p-1"
+                      >
+                        {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                      </button>
+                    </div>
                   </div>
                   <button
+                    type="submit"
                     disabled={inlineLoading || !email || !password}
-                    onClick={handleInlineLogin}
                     className="w-full rounded-lg bg-primary py-2.5 text-xs font-bold text-primary-foreground disabled:opacity-40 hover:opacity-90 transition-opacity mt-2 cursor-pointer shadow-xs flex items-center justify-center"
                   >
                     {inlineLoading && <Spinner />}
                     {inlineLoading ? 'Logging In...' : 'Log In to your Account'}
                   </button>
-                </div>
+                </form>
               )}
 
               {/* 2. Register View */}
               {inlineAuthMode === 'register' && (
-                <div className="space-y-4 pt-2 animate-in fade-in duration-200">
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    if (!inlineLoading && email.includes('@') && passwordValid) handleInlineSendRegisterOtp()
+                  }}
+                  className="space-y-4 pt-2 animate-in fade-in duration-200"
+                >
                   {inlineError && (
                     <div className="rounded-lg bg-destructive/10 p-3 text-xs text-destructive font-medium border border-destructive/20">
                       {inlineError}
@@ -864,35 +918,54 @@ export default function AgoraApp() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="h-10 w-full rounded-lg border border-input bg-card px-3 text-xs outline-none focus:ring-1.5 focus:ring-primary/30"
+                      autoComplete="email"
+                      required
                     />
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-muted-foreground uppercase">Password</label>
-                    <input
-                      type="password"
-                      placeholder="••••••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="h-10 w-full rounded-lg border border-input bg-card px-3 text-xs outline-none focus:ring-1.5 focus:ring-primary/30"
-                    />
+                    <div className="relative">
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder="••••••••••••"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="h-10 w-full rounded-lg border border-input bg-card pl-3 pr-10 text-xs outline-none focus:ring-1.5 focus:ring-primary/30"
+                        autoComplete="new-password"
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer p-1"
+                      >
+                        {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                      </button>
+                    </div>
                   </div>
 
                   {password.length > 0 && <PasswordRequirements password={password} />}
 
                   <button
+                    type="submit"
                     disabled={inlineLoading || !email.includes('@') || !passwordValid}
-                    onClick={handleInlineSendRegisterOtp}
                     className="w-full rounded-lg bg-primary py-2.5 text-xs font-bold text-primary-foreground disabled:opacity-40 hover:opacity-90 transition-opacity mt-2 cursor-pointer shadow-xs flex items-center justify-center"
                   >
                     {inlineLoading && <Spinner />}
                     {inlineLoading ? 'Sending OTP...' : 'Send Verification OTP'}
                   </button>
-                </div>
+                </form>
               )}
 
               {/* 3. OTP Verification View */}
               {inlineAuthMode === 'otp' && (
-                <div className="space-y-4 pt-2 animate-in fade-in duration-200">
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    if (!inlineLoading && inlineOtpCode.trim().length === 6) handleInlineVerifyRegisterOtp()
+                  }}
+                  className="space-y-4 pt-2 animate-in fade-in duration-200"
+                >
                   <h3 className="text-sm font-bold text-foreground">Verify Your Email</h3>
                   <div className="rounded-lg bg-primary/10 p-3 text-xs text-primary font-medium leading-5">
                     {inlineOtpMessage || `Enter the 6-digit OTP code sent to ${email}.`}
@@ -909,13 +982,15 @@ export default function AgoraApp() {
                       maxLength={6}
                       placeholder="123456"
                       value={inlineOtpCode}
-                      onChange={(e) => setInlineOtpCode(e.target.value)}
+                      onChange={(e) => setInlineOtpCode(e.target.value.replace(/\D/g, ''))}
                       className="h-12 w-full rounded-lg border border-input bg-card px-3 text-center text-lg font-mono tracking-widest outline-none focus:ring-1.5 focus:ring-primary/30"
+                      autoComplete="one-time-code"
+                      required
                     />
                   </div>
                   <button
+                    type="submit"
                     disabled={inlineLoading || inlineOtpCode.trim().length !== 6}
-                    onClick={handleInlineVerifyRegisterOtp}
                     className="w-full rounded-lg bg-primary py-2.5 text-xs font-bold text-primary-foreground disabled:opacity-40 hover:opacity-90 transition-opacity mt-2 cursor-pointer shadow-xs flex items-center justify-center"
                   >
                     {inlineLoading && <Spinner />}
@@ -927,25 +1002,34 @@ export default function AgoraApp() {
                       onClick={() => {
                         setInlineAuthMode('register')
                         setInlineError('')
+                        setPassword('')
+                        setInlineOtpCode('')
+                        setShowPassword(false)
                       }}
-                      className="text-muted-foreground hover:underline"
+                      className="text-muted-foreground hover:underline cursor-pointer"
                     >
                       ← Edit Registration Details
                     </button>
                     <button
                       type="button"
                       onClick={handleInlineSendRegisterOtp}
-                      className="text-primary hover:underline font-bold"
+                      className="text-primary hover:underline font-bold cursor-pointer"
                     >
                       Resend Code
                     </button>
                   </div>
-                </div>
+                </form>
               )}
 
               {/* 4. Forgot Password View */}
               {inlineAuthMode === 'forgot-password' && (
-                <div className="space-y-4 pt-2 animate-in fade-in duration-200">
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    if (!inlineLoading && email.includes('@')) handleInlineSendForgotPasswordOtp()
+                  }}
+                  className="space-y-4 pt-2 animate-in fade-in duration-200"
+                >
                   <h3 className="text-sm font-bold text-foreground">Reset Password</h3>
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     Enter the email address associated with your account, and we will send you a 6-digit OTP to reset your password.
@@ -963,11 +1047,13 @@ export default function AgoraApp() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="h-10 w-full rounded-lg border border-input bg-card px-3 text-xs outline-none focus:ring-1.5 focus:ring-primary/30"
+                      autoComplete="email"
+                      required
                     />
                   </div>
                   <button
+                    type="submit"
                     disabled={inlineLoading || !email.includes('@')}
-                    onClick={handleInlineSendForgotPasswordOtp}
                     className="w-full rounded-lg bg-primary py-2.5 text-xs font-bold text-primary-foreground disabled:opacity-40 hover:opacity-90 transition-opacity mt-2 cursor-pointer shadow-xs flex items-center justify-center"
                   >
                     {inlineLoading && <Spinner />}
@@ -978,17 +1064,32 @@ export default function AgoraApp() {
                     onClick={() => {
                       setInlineAuthMode('login')
                       setInlineError('')
+                      setPassword('')
+                      setInlineOtpCode('')
                     }}
-                    className="text-xs text-primary font-bold hover:underline block text-center w-full mt-2"
+                    className="text-xs text-primary font-bold hover:underline block text-center w-full mt-2 cursor-pointer"
                   >
                     ← Back to Log In
                   </button>
-                </div>
+                </form>
               )}
 
               {/* 5. Forgot Password Set New Password View */}
               {inlineAuthMode === 'forgot-password-otp' && (
-                <div className="space-y-4 pt-2 animate-in fade-in duration-200">
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    if (
+                      !inlineLoading &&
+                      inlineOtpCode.trim().length === 6 &&
+                      inlineNewPasswordValid &&
+                      inlineNewPassword === inlineConfirmPassword
+                    ) {
+                      handleInlineResetPassword()
+                    }
+                  }}
+                  className="space-y-4 pt-2 animate-in fade-in duration-200"
+                >
                   <h3 className="text-sm font-bold text-foreground">Set New Password</h3>
                   <div className="rounded-lg bg-primary/10 p-3 text-xs text-primary font-medium leading-5">
                     {inlineOtpMessage || `Enter the 6-digit verification code sent to ${email} and your new password.`}
@@ -1005,41 +1106,70 @@ export default function AgoraApp() {
                       maxLength={6}
                       placeholder="123456"
                       value={inlineOtpCode}
-                      onChange={(e) => setInlineOtpCode(e.target.value)}
+                      onChange={(e) => setInlineOtpCode(e.target.value.replace(/\D/g, ''))}
                       className="h-10 w-full rounded-lg border border-input bg-card px-3 text-center font-mono tracking-widest outline-none focus:ring-1.5 focus:ring-primary/30"
+                      autoComplete="one-time-code"
+                      required
                     />
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-muted-foreground uppercase">New Password</label>
-                    <input
-                      type="password"
-                      placeholder="••••••••••••"
-                      value={inlineNewPassword}
-                      onChange={(e) => setInlineNewPassword(e.target.value)}
-                      className="h-10 w-full rounded-lg border border-input bg-card px-3 text-xs outline-none focus:ring-1.5 focus:ring-primary/30"
-                    />
+                    <div className="relative">
+                      <input
+                        type={showNewPassword ? 'text' : 'password'}
+                        placeholder="••••••••••••"
+                        value={inlineNewPassword}
+                        onChange={(e) => setInlineNewPassword(e.target.value)}
+                        className="h-10 w-full rounded-lg border border-input bg-card pl-3 pr-10 text-xs outline-none focus:ring-1.5 focus:ring-primary/30"
+                        autoComplete="new-password"
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer p-1"
+                      >
+                        {showNewPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                      </button>
+                    </div>
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-muted-foreground uppercase">Confirm Password</label>
-                    <input
-                      type="password"
-                      placeholder="••••••••••••"
-                      value={inlineConfirmPassword}
-                      onChange={(e) => setInlineConfirmPassword(e.target.value)}
-                      className="h-10 w-full rounded-lg border border-input bg-card px-3 text-xs outline-none focus:ring-1.5 focus:ring-primary/30"
-                    />
+                    <div className="relative">
+                      <input
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        placeholder="••••••••••••"
+                        value={inlineConfirmPassword}
+                        onChange={(e) => setInlineConfirmPassword(e.target.value)}
+                        className="h-10 w-full rounded-lg border border-input bg-card pl-3 pr-10 text-xs outline-none focus:ring-1.5 focus:ring-primary/30"
+                        autoComplete="new-password"
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer p-1"
+                      >
+                        {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                      </button>
+                    </div>
+                    {inlineConfirmPassword.length > 0 && (
+                      <p className={`text-[10px] font-semibold mt-1 ${inlineNewPassword === inlineConfirmPassword ? 'text-emerald-600 dark:text-emerald-400' : 'text-destructive'}`}>
+                        {inlineNewPassword === inlineConfirmPassword ? '✓ Passwords match' : '× Passwords do not match'}
+                      </p>
+                    )}
                   </div>
 
                   {inlineNewPassword.length > 0 && <PasswordRequirements password={inlineNewPassword} />}
 
                   <button
+                    type="submit"
                     disabled={
                       inlineLoading ||
                       inlineOtpCode.trim().length !== 6 ||
                       !inlineNewPasswordValid ||
                       inlineNewPassword !== inlineConfirmPassword
                     }
-                    onClick={handleInlineResetPassword}
                     className="w-full rounded-lg bg-primary py-2.5 text-xs font-bold text-primary-foreground disabled:opacity-40 hover:opacity-90 transition-opacity mt-2 cursor-pointer shadow-xs flex items-center justify-center"
                   >
                     {inlineLoading && <Spinner />}
@@ -1050,15 +1180,18 @@ export default function AgoraApp() {
                     onClick={() => {
                       setInlineAuthMode('login')
                       setInlineError('')
+                      setPassword('')
                       setInlineOtpCode('')
                       setInlineNewPassword('')
                       setInlineConfirmPassword('')
+                      setShowNewPassword(false)
+                      setShowConfirmPassword(false)
                     }}
-                    className="text-xs text-primary font-bold hover:underline block text-center w-full mt-2"
+                    className="text-xs text-primary font-bold hover:underline block text-center w-full mt-2 cursor-pointer"
                   >
                     ← Cancel & Back to Log In
                   </button>
-                </div>
+                </form>
               )}
             </div>
           </div>

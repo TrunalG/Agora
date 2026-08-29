@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { Modal } from '@/components/Modal'
 import { skills } from '@/lib/prototype-utils'
+import { Eye, EyeOff } from 'lucide-react'
 
 interface AuthModalProps {
   mode: 'login' | 'register' | 'onboarding'
@@ -109,12 +110,29 @@ export function AuthModal({ mode, setMode, onSuccess, notify }: AuthModalProps) 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  // Password visibility states
+  const [showPassword, setShowPassword] = useState(false)
+  const [showNewPassword, setShowNewPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+
   // Forgot Password specific states
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
 
   const add = (arr: string[], set: (v: string[]) => void, s: string) =>
     set(arr.includes(s) ? arr.filter((x) => x !== s) : [...arr, s])
+
+  // Helper to clear sensitive credentials on view switch or log out
+  const resetAuthInputs = () => {
+    setPassword('')
+    setOtpCode('')
+    setNewPassword('')
+    setConfirmPassword('')
+    setError('')
+    setShowPassword(false)
+    setShowNewPassword(false)
+    setShowConfirmPassword(false)
+  }
 
   // Password Validation helper
   const lenOk = password.length >= 12 && password.length <= 64
@@ -138,7 +156,7 @@ export function AuthModal({ mode, setMode, onSuccess, notify }: AuthModalProps) 
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'send-otp', email, password }),
+        body: JSON.stringify({ action: 'send-otp', email: email.trim().toLowerCase(), password }),
       })
       const data = await res.json()
       setLoading(false)
@@ -147,6 +165,7 @@ export function AuthModal({ mode, setMode, onSuccess, notify }: AuthModalProps) 
         return
       }
       setOtpStep(true)
+      setOtpCode('') // Clear any old OTP inputs
       setOtpMessage(data.message || `Verification code sent to ${email}`)
       notify('Verification OTP sent!')
     } catch (err: any) {
@@ -162,7 +181,7 @@ export function AuthModal({ mode, setMode, onSuccess, notify }: AuthModalProps) 
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'verify-otp', email, otp: otpCode }),
+        body: JSON.stringify({ action: 'verify-otp', email: email.trim().toLowerCase(), otp: otpCode.trim() }),
       })
       const data = await res.json()
       setLoading(false)
@@ -175,6 +194,9 @@ export function AuthModal({ mode, setMode, onSuccess, notify }: AuthModalProps) 
       }
       onSuccess(data.user)
       setMode('onboarding')
+      resetAuthInputs()
+      setEmail('') // Clear email upon successful registration
+      setOtpStep(false)
       notify('Email verified successfully!')
     } catch (err: any) {
       setLoading(false)
@@ -189,7 +211,7 @@ export function AuthModal({ mode, setMode, onSuccess, notify }: AuthModalProps) 
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
       })
       const data = await res.json()
       setLoading(false)
@@ -202,6 +224,8 @@ export function AuthModal({ mode, setMode, onSuccess, notify }: AuthModalProps) 
       }
       onSuccess(data.user)
       setMode(null)
+      resetAuthInputs()
+      setEmail('') // Clear email upon successful login
     } catch (err: any) {
       setLoading(false)
       setError(err.message || 'Server connection error')
@@ -215,7 +239,7 @@ export function AuthModal({ mode, setMode, onSuccess, notify }: AuthModalProps) 
       const res = await fetch('/api/auth/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'send-otp', email }),
+        body: JSON.stringify({ action: 'send-otp', email: email.trim().toLowerCase() }),
       })
       const data = await res.json()
       setLoading(false)
@@ -224,6 +248,7 @@ export function AuthModal({ mode, setMode, onSuccess, notify }: AuthModalProps) 
         return
       }
       setView('forgot-password-otp')
+      setOtpCode('') // Clear old OTP inputs
       setOtpMessage(data.message || `Password reset code sent to ${email}`)
       notify('Reset code sent successfully!')
     } catch (err: any) {
@@ -243,7 +268,12 @@ export function AuthModal({ mode, setMode, onSuccess, notify }: AuthModalProps) 
       const res = await fetch('/api/auth/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'reset-password', email, otp: otpCode, newPassword }),
+        body: JSON.stringify({
+          action: 'reset-password',
+          email: email.trim().toLowerCase(),
+          otp: otpCode.trim(),
+          newPassword,
+        }),
       })
       const data = await res.json()
       setLoading(false)
@@ -253,8 +283,7 @@ export function AuthModal({ mode, setMode, onSuccess, notify }: AuthModalProps) 
       }
       notify('Password updated successfully! Please log in.')
       setView('login')
-      setPassword('')
-      setOtpCode('')
+      resetAuthInputs()
     } catch (err: any) {
       setLoading(false)
       setError(err.message || 'Server connection error')
@@ -319,7 +348,13 @@ export function AuthModal({ mode, setMode, onSuccess, notify }: AuthModalProps) 
   if (view === 'register' && otpStep) {
     return (
       <Modal title="Verify Email (OTP)" close={() => setMode(null)}>
-        <div className="flex flex-col gap-4">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            if (!loading && otpCode.trim().length === 6) handleVerifyOtp()
+          }}
+          className="flex flex-col gap-4"
+        >
           <div className="rounded-lg bg-primary/10 p-3 text-xs text-primary font-medium leading-5">
             {otpMessage || `Enter the 6-digit OTP code sent to ${email}.`}
           </div>
@@ -332,14 +367,16 @@ export function AuthModal({ mode, setMode, onSuccess, notify }: AuthModalProps) 
               maxLength={6}
               placeholder="123456"
               value={otpCode}
-              onChange={(e) => setOtpCode(e.target.value)}
+              onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
               className="mt-2 h-12 w-full rounded-lg border border-input bg-background px-3 text-center text-lg font-mono tracking-widest outline-none focus:ring-2 focus:ring-ring"
+              autoComplete="one-time-code"
+              required
             />
           </label>
 
           <button
+            type="submit"
             disabled={loading || otpCode.trim().length !== 6}
-            onClick={handleVerifyOtp}
             className="rounded-lg bg-primary py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-40 hover:opacity-90 transition-opacity flex items-center justify-center cursor-pointer shadow-xs"
           >
             {loading && <Spinner />}
@@ -347,14 +384,21 @@ export function AuthModal({ mode, setMode, onSuccess, notify }: AuthModalProps) 
           </button>
 
           <div className="flex justify-between text-xs pt-1">
-            <button type="button" onClick={() => setOtpStep(false)} className="text-muted-foreground hover:underline">
+            <button
+              type="button"
+              onClick={() => {
+                setOtpStep(false)
+                resetAuthInputs()
+              }}
+              className="text-muted-foreground hover:underline"
+            >
               ← Edit Registration Details
             </button>
             <button type="button" onClick={handleSendOtp} className="text-primary hover:underline font-medium">
               Resend OTP Code
             </button>
           </div>
-        </div>
+        </form>
       </Modal>
     )
   }
@@ -363,7 +407,13 @@ export function AuthModal({ mode, setMode, onSuccess, notify }: AuthModalProps) 
   if (view === 'forgot-password') {
     return (
       <Modal title="Reset Password" close={() => setMode(null)}>
-        <div className="flex flex-col gap-4">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            if (!loading && email.includes('@')) handleForgotPasswordSendOtp()
+          }}
+          className="flex flex-col gap-4"
+        >
           <p className="text-xs text-muted-foreground">
             Enter the email address associated with your account, and we will send you a 6-digit OTP to reset your password.
           </p>
@@ -377,12 +427,14 @@ export function AuthModal({ mode, setMode, onSuccess, notify }: AuthModalProps) 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="mt-2 h-10 w-full rounded-lg border border-input bg-background px-3 outline-none focus:ring-2 focus:ring-ring"
+              autoComplete="email"
+              required
             />
           </label>
 
           <button
+            type="submit"
             disabled={loading || !email.includes('@')}
-            onClick={handleForgotPasswordSendOtp}
             className="rounded-lg bg-primary py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-40 hover:opacity-90 transition-opacity flex items-center justify-center cursor-pointer shadow-xs"
           >
             {loading && <Spinner />}
@@ -393,13 +445,13 @@ export function AuthModal({ mode, setMode, onSuccess, notify }: AuthModalProps) 
             type="button"
             onClick={() => {
               setView('login')
-              setError('')
+              resetAuthInputs()
             }}
-            className="text-xs text-primary font-medium hover:underline text-center mt-1"
+            className="text-xs text-primary font-medium hover:underline text-center mt-1 cursor-pointer"
           >
             ← Back to Log In
           </button>
-        </div>
+        </form>
       </Modal>
     )
   }
@@ -408,7 +460,15 @@ export function AuthModal({ mode, setMode, onSuccess, notify }: AuthModalProps) 
   if (view === 'forgot-password-otp') {
     return (
       <Modal title="Set New Password" close={() => setMode(null)}>
-        <div className="flex flex-col gap-4">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            if (!loading && otpCode.trim().length === 6 && newPasswordValid && newPassword === confirmPassword) {
+              handleResetPassword()
+            }
+          }}
+          className="flex flex-col gap-4"
+        >
           <div className="rounded-lg bg-primary/10 p-3 text-xs text-primary font-medium leading-5">
             {otpMessage || `Enter the 6-digit verification code sent to ${email} and your new password.`}
           </div>
@@ -421,38 +481,67 @@ export function AuthModal({ mode, setMode, onSuccess, notify }: AuthModalProps) 
               maxLength={6}
               placeholder="123456"
               value={otpCode}
-              onChange={(e) => setOtpCode(e.target.value)}
+              onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
               className="mt-2 h-10 w-full rounded-lg border border-input bg-background px-3 text-center font-mono tracking-widest outline-none focus:ring-2 focus:ring-ring"
+              autoComplete="one-time-code"
+              required
             />
           </label>
 
           <label className="text-sm font-medium">
             New Password
-            <input
-              type="password"
-              placeholder="••••••••••••"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              className="mt-2 h-10 w-full rounded-lg border border-input bg-background px-3 outline-none focus:ring-2 focus:ring-ring"
-            />
+            <div className="relative mt-2">
+              <input
+                type={showNewPassword ? 'text' : 'password'}
+                placeholder="••••••••••••"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="h-10 w-full rounded-lg border border-input bg-background pl-3 pr-10 outline-none focus:ring-2 focus:ring-ring text-xs"
+                autoComplete="new-password"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer p-1"
+              >
+                {showNewPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+              </button>
+            </div>
           </label>
 
           <label className="text-sm font-medium">
             Confirm Password
-            <input
-              type="password"
-              placeholder="••••••••••••"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="mt-2 h-10 w-full rounded-lg border border-input bg-background px-3 outline-none focus:ring-2 focus:ring-ring"
-            />
+            <div className="relative mt-2">
+              <input
+                type={showConfirmPassword ? 'text' : 'password'}
+                placeholder="••••••••••••"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="h-10 w-full rounded-lg border border-input bg-background pl-3 pr-10 outline-none focus:ring-2 focus:ring-ring text-xs"
+                autoComplete="new-password"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer p-1"
+              >
+                {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+              </button>
+            </div>
+            {confirmPassword.length > 0 && (
+              <p className={`text-[10px] font-semibold mt-1 ${newPassword === confirmPassword ? 'text-emerald-600 dark:text-emerald-400' : 'text-destructive'}`}>
+                {newPassword === confirmPassword ? '✓ Passwords match' : '× Passwords do not match'}
+              </p>
+            )}
           </label>
 
           {newPassword.length > 0 && <PasswordRequirements password={newPassword} />}
 
           <button
+            type="submit"
             disabled={loading || otpCode.trim().length !== 6 || !newPasswordValid || newPassword !== confirmPassword}
-            onClick={handleResetPassword}
             className="rounded-lg bg-primary py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-40 hover:opacity-90 transition-opacity flex items-center justify-center cursor-pointer shadow-xs"
           >
             {loading && <Spinner />}
@@ -463,16 +552,13 @@ export function AuthModal({ mode, setMode, onSuccess, notify }: AuthModalProps) 
             type="button"
             onClick={() => {
               setView('login')
-              setError('')
-              setOtpCode('')
-              setNewPassword('')
-              setConfirmPassword('')
+              resetAuthInputs()
             }}
-            className="text-xs text-primary font-medium hover:underline text-center mt-1"
+            className="text-xs text-primary font-medium hover:underline text-center mt-1 cursor-pointer"
           >
             ← Cancel & Back to Log In
           </button>
-        </div>
+        </form>
       </Modal>
     )
   }
@@ -480,7 +566,16 @@ export function AuthModal({ mode, setMode, onSuccess, notify }: AuthModalProps) 
   // MAIN LOGIN / REGISTER MODAL VIEW
   return (
     <Modal title={view === 'login' ? 'Welcome back' : 'Create your account'} close={() => setMode(null)}>
-      <div className="flex flex-col gap-4">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          if (!loading && email.includes('@') && (view === 'register' ? passwordValid : password.length >= 6)) {
+            if (view === 'login') handleLogin()
+            else handleSendOtp()
+          }
+        }}
+        className="flex flex-col gap-4"
+      >
         {error && <div className="rounded-lg bg-destructive/10 p-3 text-xs text-destructive font-medium border border-destructive/20">{error}</div>}
 
         <label className="text-sm font-medium">
@@ -490,7 +585,9 @@ export function AuthModal({ mode, setMode, onSuccess, notify }: AuthModalProps) 
             value={email}
             placeholder="you@example.com"
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-2 h-10 w-full rounded-lg border border-input bg-background px-3 outline-none focus:ring-2 focus:ring-ring"
+            className="mt-2 h-10 w-full rounded-lg border border-input bg-background px-3 outline-none focus:ring-2 focus:ring-ring text-xs"
+            autoComplete="email"
+            required
           />
         </label>
 
@@ -502,29 +599,40 @@ export function AuthModal({ mode, setMode, onSuccess, notify }: AuthModalProps) 
                 type="button"
                 onClick={() => {
                   setView('forgot-password')
-                  setError('')
+                  resetAuthInputs()
                 }}
-                className="text-xs text-primary font-semibold hover:underline"
+                className="text-xs text-primary font-semibold hover:underline cursor-pointer"
               >
                 Forgot Password?
               </button>
             )}
           </div>
-          <input
-            type="password"
-            value={password}
-            placeholder="••••••••••••"
-            onChange={(e) => setPassword(e.target.value)}
-            className="mt-2 h-10 w-full rounded-lg border border-input bg-background px-3 outline-none focus:ring-2 focus:ring-ring"
-          />
+          <div className="relative mt-2">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              placeholder="••••••••••••"
+              onChange={(e) => setPassword(e.target.value)}
+              className="h-10 w-full rounded-lg border border-input bg-background pl-3 pr-10 outline-none focus:ring-2 focus:ring-ring text-xs"
+              autoComplete={view === 'login' ? 'current-password' : 'new-password'}
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer p-1"
+            >
+              {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+            </button>
+          </div>
         </div>
 
         {/* Dynamic Password Strength Indicator (Registration Mode) */}
         {view === 'register' && <PasswordRequirements password={password} />}
 
         <button
+          type="submit"
           disabled={loading || !email.includes('@') || (view === 'register' ? !passwordValid : password.length < 6)}
-          onClick={view === 'login' ? handleLogin : handleSendOtp}
           className="rounded-lg bg-primary py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-40 hover:opacity-90 transition-opacity flex items-center justify-center cursor-pointer shadow-xs"
         >
           {loading && <Spinner />}
@@ -535,14 +643,13 @@ export function AuthModal({ mode, setMode, onSuccess, notify }: AuthModalProps) 
           type="button"
           onClick={() => {
             setView(view === 'login' ? 'register' : 'login')
-            setError('')
-            setOtpStep(false)
+            resetAuthInputs()
           }}
-          className="text-sm text-primary font-semibold hover:underline text-center"
+          className="text-sm text-primary font-semibold hover:underline text-center cursor-pointer"
         >
           {view === 'login' ? 'Create account' : 'Log in instead'}
         </button>
-      </div>
+      </form>
     </Modal>
   )
 }
