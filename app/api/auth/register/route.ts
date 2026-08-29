@@ -205,7 +205,7 @@ export async function POST(req: NextRequest) {
     return setAuthCookieResponse(response, token)
   } catch (error: any) {
     console.error('Registration error:', error)
-    return NextResponse.json({ error: 'Registration failed due to a server error' }, { status: 500 })
+    return NextResponse.json({ error: error.message || 'Registration failed due to a server error' }, { status: 500 })
   }
 }
 

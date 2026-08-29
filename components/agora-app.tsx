@@ -44,7 +44,7 @@ import { Chip } from '@/components/Chip'
 import { Modal } from '@/components/Modal'
 import { ProfileView } from '@/components/ProfileView'
 import { SettingsView } from '@/components/SettingsView'
-import { AuthModal } from '@/components/AuthModal'
+import { AuthModal, PasswordRequirements } from '@/components/AuthModal'
 
 type View = 'Explore' | 'Network' | 'Messages' | 'Notifications' | 'Profile' | 'Settings'
 
@@ -115,6 +115,15 @@ export default function AgoraApp() {
   const dropdownRef = useRef<HTMLDivElement>(null)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+
+  // Inline authentication state hooks
+  const [inlineAuthMode, setInlineAuthMode] = useState<'login' | 'register' | 'otp' | 'forgot-password' | 'forgot-password-otp'>('login')
+  const [inlineError, setInlineError] = useState('')
+  const [inlineLoading, setInlineLoading] = useState(false)
+  const [inlineOtpCode, setInlineOtpCode] = useState('')
+  const [inlineOtpMessage, setInlineOtpMessage] = useState('')
+  const [inlineNewPassword, setInlineNewPassword] = useState('')
+  const [inlineConfirmPassword, setInlineConfirmPassword] = useState('')
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -564,6 +573,171 @@ export default function AgoraApp() {
     }
   }
 
+  // Password Validation Rules for Inline Forms
+  const lenOk = password.length >= 12 && password.length <= 64
+  const upperOk = /[A-Z]/.test(password)
+  const lowerOk = /[a-z]/.test(password)
+  const digitOk = /[0-9]/.test(password)
+  const symbolOk = /[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(password)
+  const passwordValid = lenOk && upperOk && lowerOk && digitOk && symbolOk
+
+  const inlineNewLenOk = inlineNewPassword.length >= 12 && inlineNewPassword.length <= 64
+  const inlineNewUpperOk = /[A-Z]/.test(inlineNewPassword)
+  const inlineNewLowerOk = /[a-z]/.test(inlineNewPassword)
+  const inlineNewDigitOk = /[0-9]/.test(inlineNewPassword)
+  const inlineNewSymbolOk = /[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(inlineNewPassword)
+  const inlineNewPasswordValid = inlineNewLenOk && inlineNewUpperOk && inlineNewLowerOk && inlineNewDigitOk && inlineNewSymbolOk
+
+  function Spinner() {
+    return (
+      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-current inline-block" fill="none" viewBox="0 0 24 24">
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+      </svg>
+    )
+  }
+
+  async function handleInlineLogin() {
+    setInlineLoading(true)
+    setInlineError('')
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      })
+      const data = await res.json()
+      setInlineLoading(false)
+      if (!res.ok) {
+        setInlineError(data.error || 'Authentication failed')
+        return
+      }
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('agora_demo_password', password)
+      }
+      setAuth('logged')
+      updateMeState(data.user)
+      loadUserData()
+      notify('Welcome to Agora!')
+      setInlineAuthMode('login')
+    } catch (err: any) {
+      setInlineLoading(false)
+      setInlineError(err.message || 'Server connection error')
+    }
+  }
+
+  async function handleInlineSendRegisterOtp() {
+    setInlineLoading(true)
+    setInlineError('')
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'send-otp', email, password }),
+      })
+      const data = await res.json()
+      setInlineLoading(false)
+      if (!res.ok) {
+        setInlineError(data.error || 'Failed to send verification code')
+        return
+      }
+      setInlineOtpMessage(data.message || `Verification code sent to ${email}`)
+      setInlineAuthMode('otp')
+      notify('Verification OTP sent!')
+    } catch (err: any) {
+      setInlineLoading(false)
+      setInlineError(err.message || 'Server connection error')
+    }
+  }
+
+  async function handleInlineVerifyRegisterOtp() {
+    setInlineLoading(true)
+    setInlineError('')
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'verify-otp', email, otp: inlineOtpCode }),
+      })
+      const data = await res.json()
+      setInlineLoading(false)
+      if (!res.ok) {
+        setInlineError(data.error || 'OTP verification failed')
+        return
+      }
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('agora_demo_password', password)
+      }
+      setAuth('logged')
+      updateMeState(data.user)
+      loadUserData()
+      setAuthMode('onboarding')
+      notify('Registration complete! Please finish onboarding.')
+    } catch (err: any) {
+      setInlineLoading(false)
+      setInlineError(err.message || 'Server connection error')
+    }
+  }
+
+  async function handleInlineSendForgotPasswordOtp() {
+    setInlineLoading(true)
+    setInlineError('')
+    try {
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'send-otp', email }),
+      })
+      const data = await res.json()
+      setInlineLoading(false)
+      if (!res.ok) {
+        setInlineError(data.error || 'Failed to send reset code')
+        return
+      }
+      setInlineOtpMessage(data.message || `Password reset code sent to ${email}`)
+      setInlineAuthMode('forgot-password-otp')
+      notify('Password reset OTP sent!')
+    } catch (err: any) {
+      setInlineLoading(false)
+      setInlineError(err.message || 'Server connection error')
+    }
+  }
+
+  async function handleInlineResetPassword() {
+    if (inlineNewPassword !== inlineConfirmPassword) {
+      setInlineError('Passwords do not match')
+      return
+    }
+    setInlineLoading(true)
+    setInlineError('')
+    try {
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'reset-password',
+          email,
+          otp: inlineOtpCode,
+          newPassword: inlineNewPassword,
+        }),
+      })
+      const data = await res.json()
+      setInlineLoading(false)
+      if (!res.ok) {
+        setInlineError(data.error || 'Password reset failed')
+        return
+      }
+      notify('Password reset successful! You can now log in.')
+      setInlineAuthMode('login')
+      setInlineOtpCode('')
+      setInlineNewPassword('')
+      setInlineConfirmPassword('')
+    } catch (err: any) {
+      setInlineLoading(false)
+      setInlineError(err.message || 'Server connection error')
+    }
+  }
+
   if (auth === 'guest') {
     return (
       <div className="min-h-screen flex bg-background text-foreground antialiased selection:bg-primary/20">
@@ -599,24 +773,89 @@ export default function AgoraApp() {
 
             {/* Auth Cards directly inline! */}
             <div className="rounded-xl border border-border bg-background p-6 shadow-sm space-y-4">
-              <div className="flex border-b border-border bg-slate-50/50 rounded-t-lg overflow-hidden">
-                <button
-                  onClick={() => setAuthMode('login')}
-                  className={`flex-1 py-2.5 text-xs font-bold text-center border-b-2 transition-all cursor-pointer ${authMode !== 'register' && authMode !== 'onboarding' ? 'border-primary text-primary bg-background' : 'border-transparent text-muted-foreground hover:bg-muted/40'}`}
-                >
-                  Log In
-                </button>
-                <button
-                  onClick={() => setAuthMode('register')}
-                  className={`flex-1 py-2.5 text-xs font-bold text-center border-b-2 transition-all cursor-pointer ${authMode === 'register' || authMode === 'onboarding' ? 'border-primary text-primary bg-background' : 'border-transparent text-muted-foreground hover:bg-muted/40'}`}
-                >
-                  Sign Up
-                </button>
-              </div>
+              {/* Only show tab headers if we are in login or register views */}
+              {(inlineAuthMode === 'login' || inlineAuthMode === 'register') && (
+                <div className="flex border-b border-border bg-slate-50/50 rounded-t-lg overflow-hidden">
+                  <button
+                    onClick={() => {
+                      setInlineAuthMode('login')
+                      setInlineError('')
+                    }}
+                    className={`flex-1 py-2.5 text-xs font-bold text-center border-b-2 transition-all cursor-pointer ${inlineAuthMode === 'login' ? 'border-primary text-primary bg-background' : 'border-transparent text-muted-foreground hover:bg-muted/40'}`}
+                  >
+                    Log In
+                  </button>
+                  <button
+                    onClick={() => {
+                      setInlineAuthMode('register')
+                      setInlineError('')
+                    }}
+                    className={`flex-1 py-2.5 text-xs font-bold text-center border-b-2 transition-all cursor-pointer ${inlineAuthMode === 'register' ? 'border-primary text-primary bg-background' : 'border-transparent text-muted-foreground hover:bg-muted/40'}`}
+                  >
+                    Sign Up
+                  </button>
+                </div>
+              )}
 
-              {/* Login / Register fields */}
-              {authMode !== 'register' && authMode !== 'onboarding' ? (
-                <div className="space-y-4 pt-2">
+              {/* 1. Login View */}
+              {inlineAuthMode === 'login' && (
+                <div className="space-y-4 pt-2 animate-in fade-in duration-200">
+                  {inlineError && (
+                    <div className="rounded-lg bg-destructive/10 p-3 text-xs text-destructive font-medium border border-destructive/20">
+                      {inlineError}
+                    </div>
+                  )}
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase">Email Address</label>
+                    <input
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="h-10 w-full rounded-lg border border-input bg-card px-3 text-xs outline-none focus:ring-1.5 focus:ring-primary/30"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-center">
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase">Password</label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setInlineAuthMode('forgot-password')
+                          setInlineError('')
+                        }}
+                        className="text-[10px] text-primary font-bold hover:underline"
+                      >
+                        Forgot Password?
+                      </button>
+                    </div>
+                    <input
+                      type="password"
+                      placeholder="••••••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="h-10 w-full rounded-lg border border-input bg-card px-3 text-xs outline-none focus:ring-1.5 focus:ring-primary/30"
+                    />
+                  </div>
+                  <button
+                    disabled={inlineLoading || !email || !password}
+                    onClick={handleInlineLogin}
+                    className="w-full rounded-lg bg-primary py-2.5 text-xs font-bold text-primary-foreground disabled:opacity-40 hover:opacity-90 transition-opacity mt-2 cursor-pointer shadow-xs flex items-center justify-center"
+                  >
+                    {inlineLoading && <Spinner />}
+                    {inlineLoading ? 'Logging In...' : 'Log In to your Account'}
+                  </button>
+                </div>
+              )}
+
+              {/* 2. Register View */}
+              {inlineAuthMode === 'register' && (
+                <div className="space-y-4 pt-2 animate-in fade-in duration-200">
+                  {inlineError && (
+                    <div className="rounded-lg bg-destructive/10 p-3 text-xs text-destructive font-medium border border-destructive/20">
+                      {inlineError}
+                    </div>
+                  )}
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-muted-foreground uppercase">Email Address</label>
                     <input
@@ -637,44 +876,187 @@ export default function AgoraApp() {
                       className="h-10 w-full rounded-lg border border-input bg-card px-3 text-xs outline-none focus:ring-1.5 focus:ring-primary/30"
                     />
                   </div>
+
+                  {password.length > 0 && <PasswordRequirements password={password} />}
+
                   <button
-                    disabled={!email || !password}
-                    onClick={async () => {
-                      try {
-                        const res = await fetch('/api/auth/login', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ email, password }),
-                        })
-                        const data = await res.json()
-                        if (res.ok) {
-                          if (typeof window !== 'undefined') {
-                            sessionStorage.setItem('agora_demo_password', password)
-                          }
-                          setAuth('logged')
-                          updateMeState(data.user)
-                          loadUserData()
-                          notify('Welcome to Agora!')
-                        } else {
-                          notify(data.error || 'Authentication failed')
-                        }
-                      } catch {
-                        notify('Network error')
-                      }
-                    }}
-                    className="w-full rounded-lg bg-primary py-2.5 text-xs font-bold text-primary-foreground disabled:opacity-40 hover:opacity-90 transition-opacity mt-2 cursor-pointer shadow-xs"
+                    disabled={inlineLoading || !email.includes('@') || !passwordValid}
+                    onClick={handleInlineSendRegisterOtp}
+                    className="w-full rounded-lg bg-primary py-2.5 text-xs font-bold text-primary-foreground disabled:opacity-40 hover:opacity-90 transition-opacity mt-2 cursor-pointer shadow-xs flex items-center justify-center"
                   >
-                    Log In to your Account
+                    {inlineLoading && <Spinner />}
+                    {inlineLoading ? 'Sending OTP...' : 'Send Verification OTP'}
                   </button>
                 </div>
-              ) : (
-                <div className="pt-2 text-center text-xs text-muted-foreground space-y-4">
-                  <p>Registering a new account requires a brief email confirmation code verification.</p>
+              )}
+
+              {/* 3. OTP Verification View */}
+              {inlineAuthMode === 'otp' && (
+                <div className="space-y-4 pt-2 animate-in fade-in duration-200">
+                  <h3 className="text-sm font-bold text-foreground">Verify Your Email</h3>
+                  <div className="rounded-lg bg-primary/10 p-3 text-xs text-primary font-medium leading-5">
+                    {inlineOtpMessage || `Enter the 6-digit OTP code sent to ${email}.`}
+                  </div>
+                  {inlineError && (
+                    <div className="rounded-lg bg-destructive/10 p-3 text-xs text-destructive font-medium border border-destructive/20">
+                      {inlineError}
+                    </div>
+                  )}
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase">6-Digit OTP Code</label>
+                    <input
+                      type="text"
+                      maxLength={6}
+                      placeholder="123456"
+                      value={inlineOtpCode}
+                      onChange={(e) => setInlineOtpCode(e.target.value)}
+                      className="h-12 w-full rounded-lg border border-input bg-card px-3 text-center text-lg font-mono tracking-widest outline-none focus:ring-1.5 focus:ring-primary/30"
+                    />
+                  </div>
                   <button
-                    onClick={() => setAuthMode('register')}
-                    className="w-full rounded-lg bg-primary py-2.5 text-xs font-bold text-primary-foreground hover:opacity-90 transition-opacity cursor-pointer shadow-xs"
+                    disabled={inlineLoading || inlineOtpCode.trim().length !== 6}
+                    onClick={handleInlineVerifyRegisterOtp}
+                    className="w-full rounded-lg bg-primary py-2.5 text-xs font-bold text-primary-foreground disabled:opacity-40 hover:opacity-90 transition-opacity mt-2 cursor-pointer shadow-xs flex items-center justify-center"
                   >
-                    Start Registration Flow
+                    {inlineLoading && <Spinner />}
+                    {inlineLoading ? 'Verifying...' : 'Verify & Create Account'}
+                  </button>
+                  <div className="flex justify-between text-[11px] pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setInlineAuthMode('register')
+                        setInlineError('')
+                      }}
+                      className="text-muted-foreground hover:underline"
+                    >
+                      ← Edit Registration Details
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleInlineSendRegisterOtp}
+                      className="text-primary hover:underline font-bold"
+                    >
+                      Resend Code
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* 4. Forgot Password View */}
+              {inlineAuthMode === 'forgot-password' && (
+                <div className="space-y-4 pt-2 animate-in fade-in duration-200">
+                  <h3 className="text-sm font-bold text-foreground">Reset Password</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Enter the email address associated with your account, and we will send you a 6-digit OTP to reset your password.
+                  </p>
+                  {inlineError && (
+                    <div className="rounded-lg bg-destructive/10 p-3 text-xs text-destructive font-medium border border-destructive/20">
+                      {inlineError}
+                    </div>
+                  )}
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase">Email Address</label>
+                    <input
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="h-10 w-full rounded-lg border border-input bg-card px-3 text-xs outline-none focus:ring-1.5 focus:ring-primary/30"
+                    />
+                  </div>
+                  <button
+                    disabled={inlineLoading || !email.includes('@')}
+                    onClick={handleInlineSendForgotPasswordOtp}
+                    className="w-full rounded-lg bg-primary py-2.5 text-xs font-bold text-primary-foreground disabled:opacity-40 hover:opacity-90 transition-opacity mt-2 cursor-pointer shadow-xs flex items-center justify-center"
+                  >
+                    {inlineLoading && <Spinner />}
+                    {inlineLoading ? 'Sending...' : 'Send Password Reset Code'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setInlineAuthMode('login')
+                      setInlineError('')
+                    }}
+                    className="text-xs text-primary font-bold hover:underline block text-center w-full mt-2"
+                  >
+                    ← Back to Log In
+                  </button>
+                </div>
+              )}
+
+              {/* 5. Forgot Password Set New Password View */}
+              {inlineAuthMode === 'forgot-password-otp' && (
+                <div className="space-y-4 pt-2 animate-in fade-in duration-200">
+                  <h3 className="text-sm font-bold text-foreground">Set New Password</h3>
+                  <div className="rounded-lg bg-primary/10 p-3 text-xs text-primary font-medium leading-5">
+                    {inlineOtpMessage || `Enter the 6-digit verification code sent to ${email} and your new password.`}
+                  </div>
+                  {inlineError && (
+                    <div className="rounded-lg bg-destructive/10 p-3 text-xs text-destructive font-medium border border-destructive/20">
+                      {inlineError}
+                    </div>
+                  )}
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase">Verification Code</label>
+                    <input
+                      type="text"
+                      maxLength={6}
+                      placeholder="123456"
+                      value={inlineOtpCode}
+                      onChange={(e) => setInlineOtpCode(e.target.value)}
+                      className="h-10 w-full rounded-lg border border-input bg-card px-3 text-center font-mono tracking-widest outline-none focus:ring-1.5 focus:ring-primary/30"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase">New Password</label>
+                    <input
+                      type="password"
+                      placeholder="••••••••••••"
+                      value={inlineNewPassword}
+                      onChange={(e) => setInlineNewPassword(e.target.value)}
+                      className="h-10 w-full rounded-lg border border-input bg-card px-3 text-xs outline-none focus:ring-1.5 focus:ring-primary/30"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase">Confirm Password</label>
+                    <input
+                      type="password"
+                      placeholder="••••••••••••"
+                      value={inlineConfirmPassword}
+                      onChange={(e) => setInlineConfirmPassword(e.target.value)}
+                      className="h-10 w-full rounded-lg border border-input bg-card px-3 text-xs outline-none focus:ring-1.5 focus:ring-primary/30"
+                    />
+                  </div>
+
+                  {inlineNewPassword.length > 0 && <PasswordRequirements password={inlineNewPassword} />}
+
+                  <button
+                    disabled={
+                      inlineLoading ||
+                      inlineOtpCode.trim().length !== 6 ||
+                      !inlineNewPasswordValid ||
+                      inlineNewPassword !== inlineConfirmPassword
+                    }
+                    onClick={handleInlineResetPassword}
+                    className="w-full rounded-lg bg-primary py-2.5 text-xs font-bold text-primary-foreground disabled:opacity-40 hover:opacity-90 transition-opacity mt-2 cursor-pointer shadow-xs flex items-center justify-center"
+                  >
+                    {inlineLoading && <Spinner />}
+                    {inlineLoading ? 'Updating password...' : 'Reset Password'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setInlineAuthMode('login')
+                      setInlineError('')
+                      setInlineOtpCode('')
+                      setInlineNewPassword('')
+                      setInlineConfirmPassword('')
+                    }}
+                    className="text-xs text-primary font-bold hover:underline block text-center w-full mt-2"
+                  >
+                    ← Cancel & Back to Log In
                   </button>
                 </div>
               )}
