@@ -1,4 +1,12 @@
 import mongoose from 'mongoose'
+import dns from 'dns'
+
+try {
+  // Set public DNS servers to resolve MongoDB SRV records correctly on networks/ISPs with SRV lookup limitations
+  dns.setServers(['8.8.8.8', '1.1.1.1'])
+} catch (e) {
+  console.warn('[MONGODB DNS] Could not set custom DNS servers:', e)
+}
 
 const MONGODB_URI = process.env.MONGODB_URI
 
