@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState, useRef } from 'react'
+import dynamic from 'next/dynamic'
 import {
   Bell,
   Check,
@@ -42,8 +43,15 @@ import {
 import { Avatar } from '@/components/Avatar'
 import { Chip } from '@/components/Chip'
 import { Modal } from '@/components/Modal'
-import { ProfileView } from '@/components/ProfileView'
-import { SettingsView } from '@/components/SettingsView'
+const ProfileView = dynamic(() => import('@/components/ProfileView').then((m) => m.ProfileView), {
+  loading: () => <div className="p-8 text-center text-xs text-muted-foreground animate-pulse">Loading Profile...</div>,
+  ssr: false,
+})
+
+const SettingsView = dynamic(() => import('@/components/SettingsView').then((m) => m.SettingsView), {
+  loading: () => <div className="p-8 text-center text-xs text-muted-foreground animate-pulse">Loading Settings...</div>,
+  ssr: false,
+})
 import { AuthModal, PasswordRequirements } from '@/components/AuthModal'
 
 type View = 'Explore' | 'Network' | 'Messages' | 'Notifications' | 'Profile' | 'Settings'
@@ -261,17 +269,28 @@ export default function AgoraApp() {
     }
   }, [])
 
-  async function loadUserData() {
+  async function loadUserData(skipUsers = false) {
     if (auth !== 'logged') return
     try {
-      const [usersRes, connRes, notifRes, blockRes] = await Promise.all([
-        fetch('/api/users'),
+      const fetches: Promise<any>[] = [
         fetch('/api/connections'),
         fetch('/api/notifications'),
         fetch('/api/user/block'),
-      ])
+      ]
+      if (!skipUsers) {
+        fetches.unshift(fetch('/api/users'))
+      }
 
-      if (usersRes.ok) {
+      const results = await Promise.all(fetches)
+
+      let usersRes: any, connRes: any, notifRes: any, blockRes: any
+      if (!skipUsers) {
+        [usersRes, connRes, notifRes, blockRes] = results
+      } else {
+        [connRes, notifRes, blockRes] = results
+      }
+
+      if (usersRes && usersRes.ok) {
         const data = await usersRes.json()
         const users = data.people || data.users
         if (users && users.length > 0) {
@@ -279,7 +298,7 @@ export default function AgoraApp() {
         }
       }
 
-      if (connRes.ok) {
+      if (connRes && connRes.ok) {
         const data = await connRes.json()
         const activeConns = data.connections || []
         setConnections(activeConns)
@@ -292,14 +311,14 @@ export default function AgoraApp() {
         setOutgoingRequests(reqs.filter((r: any) => r.senderId === currentUserId))
       }
 
-      if (notifRes.ok) {
+      if (notifRes && notifRes.ok) {
         const data = await notifRes.json()
         const allNotifs = data.notifications || []
         setNotificationsList(allNotifs)
         setUnreadNotifCount(allNotifs.filter((n: any) => !n.read).length)
       }
 
-      if (blockRes.ok) {
+      if (blockRes && blockRes.ok) {
         const data = await blockRes.json()
         setBlockedUsers(data.blocked || [])
       }
@@ -491,7 +510,7 @@ export default function AgoraApp() {
       const data = await res.json()
       if (res.ok) {
         notify('Connection request sent!')
-        loadUserData()
+        loadUserData(true)
       } else {
         // Rollback on failure
         setOutgoingRequests(prev => prev.filter(r => r.id !== `temp-${targetId}`))
@@ -517,7 +536,7 @@ export default function AgoraApp() {
       const data = await res.json()
       if (res.ok) {
         notify('Connection request withdrawn')
-        loadUserData()
+        loadUserData(true)
       } else {
         // Rollback on failure
         if (removedRequest) {
@@ -559,7 +578,7 @@ export default function AgoraApp() {
       const data = await res.json()
       if (res.ok) {
         notify(action === 'accept' ? 'Connection request accepted!' : 'Request rejected')
-        loadUserData()
+        loadUserData(true)
       } else {
         // Rollback on failure
         if (action === 'accept') {
@@ -723,7 +742,7 @@ export default function AgoraApp() {
       const res = await fetch(`/api/user/block?blockedId=${blockedId}`, { method: 'DELETE' })
       if (res.ok) {
         notify('User unblocked')
-        loadUserData()
+        loadUserData(true)
       }
     } catch {
       // ignore
@@ -2040,22 +2059,26 @@ export default function AgoraApp() {
                               <button
                                 onClick={async () => {
                                   if (window.confirm(`Are you sure you want to block ${partner.name || partner.username}?`)) {
+                                    const targetId = partner.id || partner._id
+                                    setBlockedUsers((prev) => [...prev, { id: targetId, name: partner.name || '', username: partner.username || '' }])
+                                    setActiveChat(null)
                                     try {
                                       const res = await fetch('/api/user/block', {
                                         method: 'POST',
                                         headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({ targetUserId: partner.id || partner._id }),
+                                        body: JSON.stringify({ targetUserId: targetId }),
                                       })
                                       if (res.ok) {
                                         notify('User blocked')
-                                        setActiveChat(null)
-                                        loadUserData()
+                                        loadUserData(true)
                                       } else {
                                         const d = await res.json()
                                         notify(d.error || 'Failed to block user')
+                                        setBlockedUsers((prev) => prev.filter((b) => b.id !== targetId))
                                       }
                                     } catch {
                                       notify('Network error blocking user')
+                                      setBlockedUsers((prev) => prev.filter((b) => b.id !== targetId))
                                     }
                                   }
                                 }}
