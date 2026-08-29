@@ -308,6 +308,16 @@ export default function AgoraApp() {
     }
   }
 
+  const completion = useMemo(() => getProfileCompletion(myProfileData), [myProfileData])
+
+  const blockedUserIds = useMemo(() => new Set(blockedUsers.map((b: any) => b.id)), [blockedUsers])
+
+  const filteredConnections = useMemo(() => {
+    return connections.filter(c => !blockedUserIds.has(c.partnerId))
+  }, [connections, blockedUserIds])
+
+  const filteredConnectionsCount = filteredConnections.length
+
   useEffect(() => {
     loadUserData()
   }, [auth, me.id])
@@ -369,15 +379,31 @@ export default function AgoraApp() {
     loadChatMessages()
   }, [activeChat])
 
-  const completion = useMemo(() => getProfileCompletion(myProfileData), [myProfileData])
+  useEffect(() => {
+    if (activeChat) {
+      const activeConv = conversationsList.find((c) => c.id === activeChat)
+      if (activeConv) {
+        const partnerId = activeConv.participant?.id || activeConv.participant?._id
+        if (partnerId && blockedUserIds.has(partnerId)) {
+          setActiveChat(null)
+        }
+      }
+    }
+  }, [activeChat, conversationsList, blockedUserIds])
 
-  const blockedUserIds = useMemo(() => new Set(blockedUsers.map((b: any) => b.id)), [blockedUsers])
+  useEffect(() => {
+    if (drawerActiveChat) {
+      const activeConv = conversationsList.find((c) => c.id === drawerActiveChat)
+      if (activeConv) {
+        const partnerId = activeConv.participant?.id || activeConv.participant?._id
+        if (partnerId && blockedUserIds.has(partnerId)) {
+          setDrawerActiveChat(null)
+        }
+      }
+    }
+  }, [drawerActiveChat, conversationsList, blockedUserIds])
 
-  const filteredConnections = useMemo(() => {
-    return connections.filter(c => !blockedUserIds.has(c.partnerId))
-  }, [connections, blockedUserIds])
 
-  const filteredConnectionsCount = filteredConnections.length
 
   const shown = useMemo(() => {
     const connectedPartnerIds = new Set(filteredConnections.map((c) => c.partnerId))
@@ -1780,8 +1806,8 @@ export default function AgoraApp() {
                   {/* Tab Navigation */}
                   <div className="flex border-b border-border bg-slate-50/50">
                     {[
-                      { key: 'received', label: 'Received Requests', count: incomingRequests.length },
-                      { key: 'sent', label: 'Sent Requests', count: outgoingRequests.length },
+                      { key: 'received', label: 'Received Requests', count: incomingRequests.filter((req) => !rejectedRequests.has(req.id) && !blockedUserIds.has(req.senderId)).length },
+                      { key: 'sent', label: 'Sent Requests', count: outgoingRequests.filter((req) => !blockedUserIds.has(req.receiverId)).length },
                     ].map((tab) => (
                       <button
                         key={tab.key}
@@ -1807,7 +1833,7 @@ export default function AgoraApp() {
                     {networkTab === 'received' && (
                       <div className="space-y-3">
                         {incomingRequests
-                          .filter((req) => !rejectedRequests.has(req.id))
+                          .filter((req) => !rejectedRequests.has(req.id) && !blockedUserIds.has(req.senderId))
                           .map((req) => {
                             const isAccepted = acceptedRequests.has(req.id)
                             return (
@@ -1854,7 +1880,7 @@ export default function AgoraApp() {
                               </div>
                             )
                           })}
-                        {incomingRequests.filter((req) => !rejectedRequests.has(req.id)).length === 0 && (
+                        {incomingRequests.filter((req) => !rejectedRequests.has(req.id) && !blockedUserIds.has(req.senderId)).length === 0 && (
                           <div className="text-center py-8 text-xs text-muted-foreground">
                             No received follow requests.
                           </div>
@@ -1864,7 +1890,9 @@ export default function AgoraApp() {
 
                     {networkTab === 'sent' && (
                       <div className="space-y-3">
-                        {outgoingRequests.map((req) => (
+                        {outgoingRequests
+                          .filter((req) => !blockedUserIds.has(req.receiverId))
+                          .map((req) => (
                           <div key={req.id} className="flex items-center justify-between rounded-xl border border-border p-4 shadow-2xs">
                             <button onClick={() => setProfile(req.receiver)} className="flex items-center gap-3 text-left">
                               <Avatar person={{ name: req.receiver?.name, username: req.receiver?.username, image: req.receiver?.profileImage }} />
@@ -1885,7 +1913,7 @@ export default function AgoraApp() {
                             </button>
                           </div>
                         ))}
-                        {outgoingRequests.length === 0 && (
+                        {outgoingRequests.filter((req) => !blockedUserIds.has(req.receiverId)).length === 0 && (
                           <div className="text-center py-8 text-xs text-muted-foreground">
                             No sent follow requests.
                           </div>
@@ -2100,7 +2128,12 @@ export default function AgoraApp() {
                 ) : (
                   <>
                     {notificationsList
-                      .filter((notif) => !rejectedRequests.has(notif.referenceId))
+                      .filter((notif) => {
+                        if (rejectedRequests.has(notif.referenceId)) return false
+                        const triggerUserId = notif.triggerUser?.id || notif.triggerUser?._id
+                        if (triggerUserId && blockedUserIds.has(triggerUserId)) return false
+                        return true
+                      })
                       .map((notif) => {
                         const triggerUser = notif.triggerUser
                         const initials = triggerUser ? (triggerUser.name || triggerUser.username || 'U').slice(0, 2).toUpperCase() : 'U'
@@ -2224,7 +2257,12 @@ export default function AgoraApp() {
                         )
                       })}
 
-                    {notificationsList.length === 0 && (
+                    {notificationsList.filter((notif) => {
+                      if (rejectedRequests.has(notif.referenceId)) return false
+                      const triggerUserId = notif.triggerUser?.id || notif.triggerUser?._id
+                      if (triggerUserId && blockedUserIds.has(triggerUserId)) return false
+                      return true
+                    }).length === 0 && (
                       <div className="rounded-xl border border-border bg-card p-12 text-center text-xs text-muted-foreground shadow-2xs">
                         No new updates or alerts.
                       </div>
