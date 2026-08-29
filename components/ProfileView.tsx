@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
-import { Camera, Check, Link as LinkIcon, MapPin, Pencil, Sparkles, UserRound, Users } from 'lucide-react'
+import { Camera, Check, ChevronRight, Link as LinkIcon, MapPin, Pencil, Sparkles, UserRound, Users } from 'lucide-react'
 import { Avatar } from '@/components/Avatar'
 import { Chip } from '@/components/Chip'
 import { Modal } from '@/components/Modal'
@@ -56,6 +56,17 @@ export function ProfileView({
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isFollowersModalOpen, setIsFollowersModalOpen] = useState(false)
   const [isLanguageModalOpen, setIsLanguageModalOpen] = useState(false)
+
+  const handleChecklistItemClick = (itemId: string) => {
+    if (['username', 'country', 'bio'].includes(itemId)) {
+      setIsEditModalOpen(true)
+    } else if (['learns', 'teaches'].includes(itemId)) {
+      const el = document.getElementById('skills-section')
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
+    }
+  }
 
   // Edit details form state
   const [editForm, setEditForm] = useState({
@@ -231,41 +242,75 @@ export function ProfileView({
 
           {/* Profile Strength / Setup Guide */}
           {completion < 100 && (
-            <div className="bg-card rounded-lg border border-border p-5 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="size-5 text-amber-500" />
-                  <h2 className="font-semibold text-foreground text-base">Profile Setup Guide ({completion}% Complete)</h2>
-                </div>
-                <span className="text-xs font-semibold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-full">
-                  Action Required
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground">Complete these key steps to maximize your skill matching potential and rank higher on Explore.</p>
-
-              <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-                <div className="h-full bg-primary transition-all duration-300" style={{ width: `${completion}%` }} />
-              </div>
-
-              <div className="grid gap-2 sm:grid-cols-2 pt-2">
-                {getProfileChecklist(form).map((item) => (
-                  <div
-                    key={item.id}
-                    className={`flex items-start gap-2.5 rounded-lg border p-3 text-xs transition-colors ${
-                      item.complete
-                        ? 'border-emerald-500/30 bg-emerald-500/5 text-emerald-700 dark:text-emerald-300'
-                        : 'border-border bg-card text-foreground'
-                    }`}
-                  >
-                    <div className={`mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full ${item.complete ? 'bg-emerald-500 text-white' : 'border border-amber-500 text-amber-500'}`}>
-                      {item.complete ? <Check className="size-3" /> : <span className="text-[10px]">!</span>}
-                    </div>
-                    <div>
-                      <p className={`font-semibold ${item.complete ? 'line-through opacity-80' : ''}`}>{item.label}</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">{item.hint}</p>
-                    </div>
+            <div className="bg-linear-to-br from-card to-muted/20 rounded-2xl border border-border p-6 space-y-4 shadow-sm relative overflow-hidden">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 bg-amber-500/10 rounded-xl">
+                    <Sparkles className="size-5 text-amber-500 animate-pulse" />
                   </div>
-                ))}
+                  <div>
+                    <h2 className="font-bold text-foreground text-base">Profile Setup Guide</h2>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">Complete these key steps to maximize your skill matching potential and rank higher on Explore.</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
+                    Action Required
+                  </span>
+                  <span className="text-sm font-extrabold text-foreground bg-secondary/80 px-3 py-1 rounded-full">
+                    {completion}% Complete
+                  </span>
+                </div>
+              </div>
+
+              {/* Premium Animated Progress Bar */}
+              <div className="space-y-1">
+                <div className="h-2 w-full overflow-hidden rounded-full bg-muted relative">
+                  <div
+                    className="h-full bg-linear-to-r from-amber-500 via-primary to-emerald-500 transition-all duration-500 rounded-full"
+                    style={{ width: `${completion}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Redesigned Checklist Grid */}
+              <div className="grid gap-3 sm:grid-cols-2 pt-2">
+                {getProfileChecklist(form).map((item) => {
+                  const isDone = item.complete
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      disabled={isDone}
+                      onClick={() => handleChecklistItemClick(item.id)}
+                      className={`flex items-start text-left gap-3 rounded-xl border p-3.5 text-xs transition-all duration-200 w-full ${
+                        isDone
+                          ? 'border-emerald-500/20 bg-emerald-500/5 text-emerald-800/80 dark:text-emerald-300/80 opacity-75'
+                          : 'border-border bg-card text-foreground hover:border-primary/40 hover:bg-primary/5 hover:-translate-y-0.5 cursor-pointer shadow-3xs active:scale-[0.99]'
+                      }`}
+                    >
+                      {/* Status Icon */}
+                      <div className={`mt-0.5 flex size-5.5 shrink-0 items-center justify-center rounded-full transition-colors ${
+                        isDone 
+                          ? 'bg-emerald-500 text-white' 
+                          : 'bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400'
+                      }`}>
+                        {isDone ? <Check className="size-3.5" strokeWidth={3} /> : <span className="text-[11px] font-extrabold">!</span>}
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1 space-y-0.5">
+                        <div className="flex items-center justify-between gap-1.5">
+                          <p className={`font-bold ${isDone ? 'line-through text-muted-foreground/75' : ''}`}>
+                            {item.label}
+                          </p>
+                          {!isDone && <ChevronRight className="size-3.5 text-muted-foreground/60 shrink-0 group-hover:text-primary transition-colors" />}
+                        </div>
+                        <p className="text-[11px] text-muted-foreground leading-normal">{item.hint}</p>
+                      </div>
+                    </button>
+                  )
+                })}
               </div>
             </div>
           )}
@@ -279,7 +324,7 @@ export function ProfileView({
           </div>
 
           {/* Skills Section (Teaches & Learns) */}
-          <div className="bg-card rounded-lg border border-border p-5 space-y-6">
+          <div id="skills-section" className="bg-card rounded-lg border border-border p-5 space-y-6 scroll-mt-6">
             <h2 className="font-semibold text-foreground text-base">Skills & Expertise</h2>
 
             {/* Skills I Can Teach */}

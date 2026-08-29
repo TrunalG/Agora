@@ -266,23 +266,9 @@ export default function AgoraApp() {
 
       if (usersRes.ok) {
         const data = await usersRes.json()
-        if (data.users && data.users.length > 0) {
-          const mapped: Person[] = data.users.map((u: any) => ({
-            id: u.id || u._id,
-            name: u.name || u.username,
-            username: u.username,
-            role: u.skillsToTeach?.[0] ? `${u.skillsToTeach[0]} Mentor` : 'Member',
-            location: u.country || 'Anywhere',
-            initials: (u.name || u.username || 'U').slice(0, 2).toUpperCase(),
-            tone: 'bg-accent text-accent-foreground',
-            teaches: u.skillsToTeach || [],
-            learns: u.skillsToLearn || [],
-            about: u.bio || '',
-            image: u.profileImage || '',
-            links: u.links || [],
-            connectionsCount: u.connectionsCount || 0,
-          }))
-          setPeopleList(mapped)
+        const users = data.people || data.users
+        if (users && users.length > 0) {
+          setPeopleList(users)
         }
       }
 
@@ -1242,14 +1228,31 @@ export default function AgoraApp() {
                 type="text"
                 placeholder="Search skills, members, topics..."
                 value={searchVal}
-                onChange={(e) => setSearchVal(e.target.value)}
+                onChange={(e) => {
+                  setSearchVal(e.target.value)
+                  if (!e.target.value.trim()) {
+                    setQuery('')
+                  }
+                }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     setQuery(searchVal)
                   }
                 }}
-                className="h-8.5 w-full rounded-lg border border-input bg-secondary/50 pl-9 pr-4 text-xs outline-none focus:bg-background focus:ring-1.5 focus:ring-primary/40 focus:border-primary transition-all"
+                className="h-8.5 w-full rounded-lg border border-input bg-secondary/50 pl-9 pr-8 text-xs outline-none focus:bg-background focus:ring-1.5 focus:ring-primary/40 focus:border-primary transition-all"
               />
+              {searchVal && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchVal('')
+                    setQuery('')
+                  }}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer p-0.5"
+                >
+                  <X className="size-3.5" />
+                </button>
+              )}
             </div>
           </div>
 
@@ -1410,7 +1413,13 @@ export default function AgoraApp() {
                     ].map((tab) => (
                       <button
                         key={tab.key}
-                        onClick={() => setFilter(tab.key as any)}
+                        onClick={() => {
+                          setFilter(tab.key as any)
+                          if (tab.key === 'all') {
+                            setQuery('')
+                            setSearchVal('')
+                          }
+                        }}
                         className={`w-full text-left rounded-lg px-3 py-2 text-xs font-semibold transition-all border ${
                           filter === tab.key
                             ? 'bg-primary/5 text-primary border-primary/20 font-bold'
@@ -1467,7 +1476,13 @@ export default function AgoraApp() {
                     ].map((tab) => (
                       <button
                         key={tab.key}
-                        onClick={() => setFilter(tab.key as any)}
+                        onClick={() => {
+                          setFilter(tab.key as any)
+                          if (tab.key === 'all') {
+                            setQuery('')
+                            setSearchVal('')
+                          }
+                        }}
                         className={`rounded-full px-4 py-1.5 text-xs font-semibold whitespace-nowrap border transition-all ${
                           filter === tab.key
                             ? 'bg-primary text-primary-foreground border-primary font-bold'
@@ -2068,20 +2083,20 @@ export default function AgoraApp() {
                     const res = await fetch(`/api/users?q=${id}`)
                     if (res.ok) {
                       const data = await res.json()
-                      const matched = data.users?.find((u: any) => u.username === id || u._id === id)
+                      const matched = (data.people || data.users)?.find((u: any) => u.username === id || u.id === id || u._id === id)
                       if (matched) {
                         setProfile({
-                          id: matched._id,
+                          id: matched.id || matched._id,
                           name: matched.name || matched.username,
                           username: matched.username,
-                          role: matched.skillsToTeach?.[0] ? `${matched.skillsToTeach[0]} Mentor` : 'Member',
-                          location: matched.country || 'Anywhere',
-                          initials: (matched.name || matched.username || 'U').slice(0, 2).toUpperCase(),
+                          role: matched.role || (matched.skillsToTeach?.[0] ? `${matched.skillsToTeach[0]} Mentor` : 'Member'),
+                          location: matched.location || matched.country || 'Anywhere',
+                          initials: matched.initials || (matched.name || matched.username || 'U').slice(0, 2).toUpperCase(),
                           tone: 'bg-accent text-accent-foreground',
-                          teaches: matched.skillsToTeach || [],
-                          learns: matched.skillsToLearn || [],
-                          about: matched.bio || '',
-                          image: matched.profileImage || '',
+                          teaches: matched.teaches || matched.skillsToTeach || [],
+                          learns: matched.learns || matched.skillsToLearn || [],
+                          about: matched.about || matched.bio || '',
+                          image: matched.image || matched.profileImage || '',
                           links: matched.links || [],
                           connectionsCount: matched.connectionsCount || 0,
                         })
