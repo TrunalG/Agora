@@ -331,23 +331,34 @@ export default function LandingPage() {
             {/* Interactive Exchange Sandbox */}
             <div className="mt-16 lg:mt-0 lg:col-span-6 flex justify-center relative">
               
-              {/* Sticker 1: Try selecting tags */}
-              <div className="absolute -top-12 -left-12 hidden xl:flex items-center gap-1.5 rounded-lg border border-border/80 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs -rotate-3 select-none z-20">
-                <span>Try selecting tags</span>
+              {/* Sticker 1: Define what you learn */}
+              <div className="absolute -top-14 -left-20 hidden xl:flex flex-col gap-0.5 rounded-lg border border-border/80 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs -rotate-3 select-none z-20">
+                <span>1. Define what you learn</span>
+                <span className="text-[10px] text-muted-foreground font-normal">Specify the skills you want to master</span>
               </div>
-              <svg className="absolute -top-6 -left-2 w-12 h-10 hidden xl:block text-muted-foreground/40 z-20 animate-pulse" viewBox="0 0 50 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M10,5 C25,5 35,15 40,25" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="3 3" />
-                <path d="M33,22 L40,25 L41,17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              <svg className="absolute -top-8 -left-4 w-12 h-10 hidden xl:block text-muted-foreground/40 z-20" viewBox="0 0 50 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10,5 C22,5 30,12 36,22" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="3 3" />
+                <path d="M29,19 L36,22 L37,14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
 
-              {/* Sticker 2: Reciprocal matching */}
-              <div className="absolute top-[45%] -right-28 -translate-y-1/2 hidden xl:flex flex-col gap-0.5 rounded-lg border border-border/80 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs rotate-3 select-none z-20">
-                <span>Instant match</span>
-                <span className="text-[10px] text-muted-foreground font-normal">Based on teaches/learns alignment</span>
+              {/* Sticker 2: Offer what you teach */}
+              <div className="absolute top-[48%] -left-36 -translate-y-1/2 hidden xl:flex flex-col gap-0.5 rounded-lg border border-border/80 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs -rotate-3 select-none z-20">
+                <span>2. Offer what you teach</span>
+                <span className="text-[10px] text-muted-foreground font-normal">List the expertise you can share</span>
               </div>
-              <svg className="absolute top-[52%] -right-6 w-12 h-12 hidden xl:block text-muted-foreground/40 z-20" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M40,10 C30,20 20,25 10,35" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="3 3" />
-                <path d="M18,34 L10,35 L12,27" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              <svg className="absolute top-[52%] -left-12 w-12 h-10 hidden xl:block text-muted-foreground/40 z-20" viewBox="0 0 50 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10,10 C22,12 30,18 36,25" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="3 3" />
+                <path d="M29,22 L36,25 L37,17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+
+              {/* Sticker 3: Match and swap */}
+              <div className="absolute top-[75%] -right-32 -translate-y-1/2 hidden xl:flex flex-col gap-0.5 rounded-lg border border-border/80 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs rotate-3 select-none z-20">
+                <span>3. Match and swap!</span>
+                <span className="text-[10px] text-muted-foreground font-normal">Connect directly with zero fees</span>
+              </div>
+              <svg className="absolute top-[80%] -right-10 w-12 h-10 hidden xl:block text-muted-foreground/40 z-20" viewBox="0 0 50 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M40,5 C30,10 20,15 10,25" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="3 3" />
+                <path d="M18,24 L10,25 L12,17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
 
               <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-sm hover:shadow-md transition-all duration-300 z-10 relative">
