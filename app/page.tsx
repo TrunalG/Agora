@@ -314,14 +314,14 @@ export default function LandingPage() {
               <div className="flex flex-wrap gap-3.5">
                 <Link
                   href="/app?mode=register"
-                  className="inline-flex h-11 items-center justify-center rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-all shadow-sm cursor-pointer group active:scale-[0.98]"
+                  className="inline-flex h-11 sm:min-w-[160px] items-center justify-center rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-all shadow-sm cursor-pointer group active:scale-[0.98]"
                 >
                   Join the Exchange
                   <ArrowRight className="ml-2 size-4 group-hover:translate-x-0.5 transition-transform" />
                 </Link>
                 <Link
                   href="/app"
-                  className="inline-flex h-11 items-center justify-center rounded-lg border border-border bg-card px-5 text-sm font-medium text-foreground hover:bg-muted/20 transition-all cursor-pointer active:scale-[0.98]"
+                  className="inline-flex h-11 sm:min-w-[160px] items-center justify-center rounded-lg border border-border bg-card px-5 text-sm font-semibold text-foreground hover:bg-muted/20 transition-all cursor-pointer active:scale-[0.98]"
                 >
                   Browse Members
                 </Link>
