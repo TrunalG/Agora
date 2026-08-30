@@ -818,12 +818,12 @@ export default function LandingPage() {
           {/* Top Zone */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 pb-12">
             {/* Left Side: Short Headline, Subheadline & Button */}
-            <div className="md:col-span-5 flex flex-col items-start text-left">
+            <div className="md:col-span-5 lg:col-span-4 flex flex-col items-start text-left">
               <h3 className="text-xl font-bold text-foreground mb-2">
-                Swap knowledge, not tokens
+                Exchange knowledge. Grow together.
               </h3>
               <p className="text-muted-foreground text-sm leading-relaxed max-w-sm mb-6">
-                Direct, reciprocal peer learning for active builders. No fees, no middlemen.
+                Agora connects active builders for direct, peer-to-peer skill swapping and network growth.
               </p>
               <Link
                 href="/app?mode=register"
@@ -833,10 +833,10 @@ export default function LandingPage() {
               </Link>
             </div>
 
-            {/* Right Side: Columns with links */}
-            <div className="md:col-span-7 grid grid-cols-3 gap-6">
+            {/* Right Side: Columns with links, aligned to the right margin */}
+            <div className="md:col-span-7 lg:col-span-6 lg:col-start-7 grid grid-cols-3 gap-6 md:justify-items-end">
               {/* Column 1 */}
-              <div>
+              <div className="w-full text-left md:w-auto md:min-w-[120px]">
                 <h4 className="text-xs font-bold text-foreground uppercase tracking-wider mb-4">Explore</h4>
                 <ul className="space-y-2 text-xs text-muted-foreground">
                   <li><Link href="/app" className="hover:text-foreground transition-colors">Browse Members</Link></li>
@@ -844,7 +844,7 @@ export default function LandingPage() {
                 </ul>
               </div>
               {/* Column 2 */}
-              <div>
+              <div className="w-full text-left md:w-auto md:min-w-[120px]">
                 <h4 className="text-xs font-bold text-foreground uppercase tracking-wider mb-4">Features</h4>
                 <ul className="space-y-2 text-xs text-muted-foreground">
                   <li><a href="#features" className="hover:text-foreground transition-colors">Smart Matchmaking</a></li>
@@ -852,7 +852,7 @@ export default function LandingPage() {
                 </ul>
               </div>
               {/* Column 3 */}
-              <div>
+              <div className="w-full text-left md:w-auto md:min-w-[120px]">
                 <h4 className="text-xs font-bold text-foreground uppercase tracking-wider mb-4">Resources</h4>
                 <ul className="space-y-2 text-xs text-muted-foreground">
                   <li><a href="#how-it-works" className="hover:text-foreground transition-colors">How it Works</a></li>
