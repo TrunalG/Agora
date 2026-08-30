@@ -304,19 +304,19 @@ export default function LandingPage() {
                 <Sparkles className="size-3 text-muted-foreground/80" /> Peer-to-Peer Skill Exchange
               </span>
               <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-foreground leading-[1.15] mb-5">
-                Learn new skills.<br />
-                Teach what you love.<br />
-                Grow your connections.
+                Learn a Skill.<br />
+                Teach a skill.<br />
+                Exchange Knowledge.
               </h1>
               <p className="text-sm sm:text-base text-muted-foreground leading-relaxed max-w-lg mb-8">
-                Connect directly with other builders to swap expertise. Trade what you know for what you need next, with no fees, no tokens, and no middlemen.
+                Agora connects you with people who want to learn what you know and teach what you want to learn.
               </p>
               <div className="flex flex-wrap gap-3.5">
                 <Link
                   href="/app?mode=register"
                   className="inline-flex h-11 sm:min-w-[160px] items-center justify-center rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-all shadow-sm cursor-pointer group active:scale-[0.98]"
                 >
-                  Join the Exchange
+                  Find Your Skill Match
                   <ArrowRight className="ml-2 size-4 group-hover:translate-x-0.5 transition-transform" />
                 </Link>
                 <Link
@@ -377,8 +377,8 @@ export default function LandingPage() {
                           key={skill}
                           onClick={() => setSelectedLearn(skill)}
                           className={`px-2.5 py-1 rounded-md text-xs font-semibold border transition-all duration-200 cursor-pointer ${selectedLearn === skill
-                              ? 'bg-primary text-primary-foreground border-primary shadow-xs scale-102'
-                              : 'bg-background hover:bg-muted/40 border-border text-muted-foreground hover:text-foreground'
+                            ? 'bg-primary text-primary-foreground border-primary shadow-xs scale-102'
+                            : 'bg-background hover:bg-muted/40 border-border text-muted-foreground hover:text-foreground'
                             }`}
                         >
                           {skill}
@@ -396,8 +396,8 @@ export default function LandingPage() {
                           key={skill}
                           onClick={() => setSelectedTeach(skill)}
                           className={`px-2.5 py-1 rounded-md text-xs font-semibold border transition-all duration-200 cursor-pointer ${selectedTeach === skill
-                              ? 'bg-primary text-primary-foreground border-primary shadow-xs scale-102'
-                              : 'bg-background hover:bg-muted/40 border-border text-muted-foreground hover:text-foreground'
+                            ? 'bg-primary text-primary-foreground border-primary shadow-xs scale-102'
+                            : 'bg-background hover:bg-muted/40 border-border text-muted-foreground hover:text-foreground'
                             }`}
                         >
                           {skill}
@@ -411,8 +411,8 @@ export default function LandingPage() {
                     <div className="flex justify-between items-center mb-3">
                       <span className="text-xs font-bold text-foreground">Matching Peer Preview</span>
                       <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-extrabold tracking-tight uppercase border transition-all duration-300 ${isPerfectMatch
-                          ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
-                          : 'bg-amber-500/10 text-amber-600 border-amber-500/20'
+                        ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
+                        : 'bg-amber-500/10 text-amber-600 border-amber-500/20'
                         }`}>
                         <span className="flex items-center gap-1">
                           <svg className="size-2.5 text-current shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3.5}>
@@ -454,6 +454,150 @@ export default function LandingPage() {
               </div>
             </div>
 
+          </div>
+        </div>
+      </section>
+
+      {/* How it Works Section */}
+      <section id="how-it-works" className="py-24 border-b border-border/40 bg-muted/5">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-20">
+            <h2 className="text-3xl font-extrabold tracking-tight text-foreground mb-4">
+              How Agora works in three steps
+            </h2>
+            <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
+              We focus on reciprocal learning. Here is how you start exchanging knowledge.
+            </p>
+          </div>
+
+          {/* Interactive Scroll Timeline Container */}
+          <div className="relative mt-12 max-w-4xl mx-auto" ref={timelineRef}>
+            {/* Center track vertical line */}
+            <div className="absolute left-8 md:left-1/2 top-5 bottom-5 w-[2px] -translate-x-1/2 bg-border/40 overflow-hidden">
+              <div
+                className="absolute top-0 left-0 w-full bg-primary origin-top transition-transform duration-100 ease-out"
+                style={{
+                  height: '100%',
+                  transform: `scaleY(${scrollProgress})`
+                }}
+              />
+            </div>
+
+            {/* Timeline Steps Stack */}
+            <div className="space-y-20 relative">
+              {[
+                {
+                  number: "01",
+                  title: "Set up your profile",
+                  description: "Create your card. Define exactly what you are building, the tools you teach, and what you need next."
+                },
+                {
+                  number: "02",
+                  title: "Find your pairing",
+                  description: "Match with peers. Discover matching profiles based on reciprocated teaches/learns scores."
+                },
+                {
+                  number: "03",
+                  title: "Start the exchange",
+                  description: "Swap knowledge. Connect in our secure inbox to talk, share guidance, and collaborate on your growth goals."
+                }
+              ].map((step, idx) => {
+                const thresholds = [0.15, 0.50, 0.85];
+                const isActive = scrollProgress >= thresholds[idx];
+
+                return (
+                  <div
+                    key={idx}
+                    className={`relative flex flex-col md:flex-row items-start md:items-center justify-between transition-all duration-700 ease-out ${isActive ? 'opacity-100 translate-y-0' : 'opacity-20 translate-y-4'
+                      }`}
+                  >
+                    {/* Content Block */}
+                    <div className={`w-full md:w-[45%] pl-16 md:pl-0 ${idx % 2 === 0
+                      ? 'md:pr-12 md:text-right flex flex-col md:items-end'
+                      : 'md:order-last md:pl-12 md:text-left flex flex-col md:items-start'
+                      }`}>
+                      <span className="text-xs font-mono font-bold text-primary mb-1 uppercase tracking-wider">Step {step.number}</span>
+                      <h3 className="text-xl font-extrabold text-foreground mb-3">{step.title}</h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {step.description}
+                      </p>
+                    </div>
+
+                    {/* Step Node Bubble */}
+                    <div
+                      className={`absolute left-8 md:left-1/2 -translate-x-1/2 flex size-10 items-center justify-center rounded-full font-bold text-sm transition-all duration-500 border-2 z-10 ${isActive
+                        ? 'bg-primary border-primary text-primary-foreground scale-110 shadow-lg shadow-primary/20'
+                        : 'bg-card border-border text-muted-foreground scale-90'
+                        }`}
+                    >
+                      {step.number}
+                    </div>
+
+                    {/* Desktop Right Side Spacer */}
+                    <div className="hidden md:block w-full md:w-[45%]" />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section id="testimonials" className="py-20 border-t border-b border-border/80 overflow-hidden">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <h2 className="text-3xl font-extrabold tracking-tight text-foreground mb-4">
+              Real exchanges, real growth
+            </h2>
+            <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
+              Hear from professionals who used peer skill trades to expand their horizons.
+            </p>
+          </div>
+        </div>
+
+        {/* Seamless Marquee Slider Loop */}
+        <div className="relative mx-auto max-w-7xl overflow-hidden py-4">
+          <style>{`
+            @keyframes marquee {
+              0% { transform: translateX(0); }
+              100% { transform: translateX(-50%); }
+            }
+            .marquee-inner {
+              display: flex;
+              width: max-content;
+              animation: marquee 45s linear infinite;
+            }
+            .marquee-inner:hover {
+              animation-play-state: paused;
+            }
+          `}</style>
+
+          {/* Left and Right Fade Gradients */}
+          <div className="absolute left-0 top-0 bottom-0 w-28 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none"></div>
+          <div className="absolute right-0 top-0 bottom-0 w-28 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none"></div>
+
+          <div className="marquee-inner flex gap-6 px-4">
+            {/* Map the testimonials twice to achieve seamless visual looping when moving to -50% */}
+            {[...testimonials, ...testimonials].map((t, idx) => (
+              <div
+                key={idx}
+                className="w-[340px] shrink-0 rounded-2xl border border-border bg-card p-6 shadow-2xs flex flex-col justify-between transition-all duration-300 hover:border-primary/20 hover:shadow-xs"
+              >
+                <p className="text-sm text-muted-foreground leading-relaxed italic mb-6">
+                  "{t.quote}"
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="flex size-8 items-center justify-center rounded-full bg-accent/40 text-xs font-bold text-accent-foreground">
+                    {t.initials}
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-foreground">{t.name}</h4>
+                    <p className="text-[10px] text-muted-foreground">{t.role} • {t.location}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -556,150 +700,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* How it Works Section */}
-      <section id="how-it-works" className="py-24 border-b border-border/40 bg-muted/5">
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-20">
-            <h2 className="text-3xl font-extrabold tracking-tight text-foreground mb-4">
-              How Agora works in three steps
-            </h2>
-            <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
-              We focus on reciprocal learning. Here is how you start exchanging knowledge.
-            </p>
-          </div>
-
-          {/* Interactive Scroll Timeline Container */}
-          <div className="relative mt-12 max-w-4xl mx-auto" ref={timelineRef}>
-            {/* Center track vertical line */}
-            <div className="absolute left-8 md:left-1/2 top-5 bottom-5 w-[2px] -translate-x-1/2 bg-border/40 overflow-hidden">
-              <div
-                className="absolute top-0 left-0 w-full bg-primary origin-top transition-transform duration-100 ease-out"
-                style={{
-                  height: '100%',
-                  transform: `scaleY(${scrollProgress})`
-                }}
-              />
-            </div>
-
-            {/* Timeline Steps Stack */}
-            <div className="space-y-20 relative">
-              {[
-                {
-                  number: "01",
-                  title: "Set up your profile",
-                  description: "Create your card. Define exactly what you are building, the tools you teach, and what you need next."
-                },
-                {
-                  number: "02",
-                  title: "Find your pairing",
-                  description: "Match with peers. Discover matching profiles based on reciprocated teaches/learns scores."
-                },
-                {
-                  number: "03",
-                  title: "Start the exchange",
-                  description: "Swap knowledge. Connect in our secure inbox to talk, share guidance, and collaborate on your growth goals."
-                }
-              ].map((step, idx) => {
-                const thresholds = [0.15, 0.50, 0.85];
-                const isActive = scrollProgress >= thresholds[idx];
-
-                return (
-                  <div
-                    key={idx}
-                    className={`relative flex flex-col md:flex-row items-start md:items-center justify-between transition-all duration-700 ease-out ${isActive ? 'opacity-100 translate-y-0' : 'opacity-20 translate-y-4'
-                      }`}
-                  >
-                    {/* Content Block */}
-                    <div className={`w-full md:w-[45%] pl-16 md:pl-0 ${idx % 2 === 0
-                        ? 'md:pr-12 md:text-right flex flex-col md:items-end'
-                        : 'md:order-last md:pl-12 md:text-left flex flex-col md:items-start'
-                      }`}>
-                      <span className="text-xs font-mono font-bold text-primary mb-1 uppercase tracking-wider">Step {step.number}</span>
-                      <h3 className="text-xl font-extrabold text-foreground mb-3">{step.title}</h3>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        {step.description}
-                      </p>
-                    </div>
-
-                    {/* Step Node Bubble */}
-                    <div
-                      className={`absolute left-8 md:left-1/2 -translate-x-1/2 flex size-10 items-center justify-center rounded-full font-bold text-sm transition-all duration-500 border-2 z-10 ${isActive
-                          ? 'bg-primary border-primary text-primary-foreground scale-110 shadow-lg shadow-primary/20'
-                          : 'bg-card border-border text-muted-foreground scale-90'
-                        }`}
-                    >
-                      {step.number}
-                    </div>
-
-                    {/* Desktop Right Side Spacer */}
-                    <div className="hidden md:block w-full md:w-[45%]" />
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section id="testimonials" className="py-20 border-t border-b border-border/80 overflow-hidden">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-3xl font-extrabold tracking-tight text-foreground mb-4">
-              Real exchanges, real growth
-            </h2>
-            <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
-              Hear from professionals who used peer skill trades to expand their horizons.
-            </p>
-          </div>
-        </div>
-
-        {/* Seamless Marquee Slider Loop */}
-        <div className="relative mx-auto max-w-7xl overflow-hidden py-4">
-          <style>{`
-            @keyframes marquee {
-              0% { transform: translateX(0); }
-              100% { transform: translateX(-50%); }
-            }
-            .marquee-inner {
-              display: flex;
-              width: max-content;
-              animation: marquee 45s linear infinite;
-            }
-            .marquee-inner:hover {
-              animation-play-state: paused;
-            }
-          `}</style>
-
-          {/* Left and Right Fade Gradients */}
-          <div className="absolute left-0 top-0 bottom-0 w-28 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none"></div>
-          <div className="absolute right-0 top-0 bottom-0 w-28 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none"></div>
-
-          <div className="marquee-inner flex gap-6 px-4">
-            {/* Map the testimonials twice to achieve seamless visual looping when moving to -50% */}
-            {[...testimonials, ...testimonials].map((t, idx) => (
-              <div
-                key={idx}
-                className="w-[340px] shrink-0 rounded-2xl border border-border bg-card p-6 shadow-2xs flex flex-col justify-between transition-all duration-300 hover:border-primary/20 hover:shadow-xs"
-              >
-                <p className="text-sm text-muted-foreground leading-relaxed italic mb-6">
-                  "{t.quote}"
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="flex size-8 items-center justify-center rounded-full bg-accent/40 text-xs font-bold text-accent-foreground">
-                    {t.initials}
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-foreground">{t.name}</h4>
-                    <p className="text-[10px] text-muted-foreground">{t.role} • {t.location}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* CTA Box Section */}
       <section className="py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -717,35 +717,35 @@ export default function LandingPage() {
             {/* Left Side Floating Avatar Badges (Hidden on mobile) */}
             <div className="hidden lg:block">
               {/* Maya Chen */}
-              <div 
+              <div
                 className="absolute left-[4%] top-[18%] flex size-12 items-center justify-center rounded-full shadow-xs border border-border/50 bg-background overflow-hidden select-none float-badge"
                 style={{ '--rot-deg': '-3deg', 'animationDelay': '0s' } as React.CSSProperties}
               >
                 <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&h=150&q=80" alt="Member Portrait" className="object-cover w-full h-full pointer-events-none" />
               </div>
               {/* Priya Shah */}
-              <div 
+              <div
                 className="absolute left-[18%] top-[10%] flex size-9 items-center justify-center rounded-full shadow-xs border border-border/50 bg-background overflow-hidden select-none float-badge"
                 style={{ '--rot-deg': '4deg', 'animationDelay': '1.5s' } as React.CSSProperties}
               >
                 <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150&q=80" alt="Member Portrait" className="object-cover w-full h-full pointer-events-none" />
               </div>
               {/* Nora Williams */}
-              <div 
+              <div
                 className="absolute left-[10%] top-[45%] flex size-14 items-center justify-center rounded-full shadow-xs border border-border/50 bg-background overflow-hidden select-none float-badge"
                 style={{ '--rot-deg': '-2deg', 'animationDelay': '3s' } as React.CSSProperties}
               >
                 <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&h=150&q=80" alt="Member Portrait" className="object-cover w-full h-full pointer-events-none" />
               </div>
               {/* Sam Rivera */}
-              <div 
+              <div
                 className="absolute left-[22%] top-[68%] flex size-10 items-center justify-center rounded-full shadow-xs border border-border/50 bg-background overflow-hidden select-none float-badge"
                 style={{ '--rot-deg': '5deg', 'animationDelay': '4.5s' } as React.CSSProperties}
               >
                 <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&h=150&q=80" alt="Member Portrait" className="object-cover w-full h-full pointer-events-none" />
               </div>
               {/* Extra Member 1 */}
-              <div 
+              <div
                 className="absolute left-[5%] top-[72%] flex size-11 items-center justify-center rounded-full shadow-xs border border-border/50 bg-background overflow-hidden select-none float-badge"
                 style={{ '--rot-deg': '-1deg', 'animationDelay': '2s' } as React.CSSProperties}
               >
@@ -772,35 +772,35 @@ export default function LandingPage() {
             {/* Right Side Floating Avatar Badges (Hidden on mobile) */}
             <div className="hidden lg:block">
               {/* Jordan Lee */}
-              <div 
+              <div
                 className="absolute right-[4%] top-[20%] flex size-12 items-center justify-center rounded-full shadow-xs border border-border/50 bg-background overflow-hidden select-none float-badge"
                 style={{ '--rot-deg': '3deg', 'animationDelay': '0.7s' } as React.CSSProperties}
               >
                 <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&h=150&q=80" alt="Member Portrait" className="object-cover w-full h-full pointer-events-none" />
               </div>
               {/* Alex Morgan */}
-              <div 
+              <div
                 className="absolute right-[18%] top-[12%] flex size-9 items-center justify-center rounded-full shadow-xs border border-border/50 bg-background overflow-hidden select-none float-badge"
                 style={{ '--rot-deg': '-4deg', 'animationDelay': '2.2s' } as React.CSSProperties}
               >
                 <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=150&h=150&q=80" alt="Member Portrait" className="object-cover w-full h-full pointer-events-none" />
               </div>
               {/* Sam Rivera */}
-              <div 
+              <div
                 className="absolute right-[10%] top-[48%] flex size-14 items-center justify-center rounded-full shadow-xs border border-border/50 bg-background overflow-hidden select-none float-badge"
                 style={{ '--rot-deg': '2deg', 'animationDelay': '3.7s' } as React.CSSProperties}
               >
                 <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=150&h=150&q=80" alt="Member Portrait" className="object-cover w-full h-full pointer-events-none" />
               </div>
               {/* Nora Williams */}
-              <div 
+              <div
                 className="absolute right-[24%] top-[70%] flex size-10 items-center justify-center rounded-full shadow-xs border border-border/50 bg-background overflow-hidden select-none float-badge"
                 style={{ '--rot-deg': '-5deg', 'animationDelay': '5.2s' } as React.CSSProperties}
               >
                 <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&h=150&q=80" alt="Member Portrait" className="object-cover w-full h-full pointer-events-none" />
               </div>
               {/* Extra Member 2 */}
-              <div 
+              <div
                 className="absolute right-[5%] top-[72%] flex size-11 items-center justify-center rounded-full shadow-xs border border-border/50 bg-background overflow-hidden select-none float-badge"
                 style={{ '--rot-deg': '1deg', 'animationDelay': '1.2s' } as React.CSSProperties}
               >
