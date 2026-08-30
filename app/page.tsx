@@ -227,17 +227,17 @@ export default function LandingPage() {
           </div>
 
           <div className="flex items-center gap-4">
-            <Link
+            {/* <Link
               href="/app?mode=login"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
             >
               Log In
-            </Link>
+            </Link> */}
             <Link
               href="/app?mode=register"
               className="inline-flex h-9 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/95 transition-all shadow-xs cursor-pointer active:scale-[0.98]"
             >
-              Get Started
+              Login/Sign Up
             </Link>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -352,11 +352,11 @@ export default function LandingPage() {
               </svg>
 
               {/* Sticker 3: Match and swap! (Bottom Left) */}
-              <div className="absolute top-[70%] -left-32 -translate-y-1/2 hidden xl:flex flex-col gap-0.5 rounded-lg border border-border/80 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs -rotate-2 select-none z-20">
+              <div className="absolute top-[64%] -left-28 -translate-y-1/2 hidden xl:flex flex-col gap-0.5 rounded-lg border border-border/80 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs -rotate-2 select-none z-20">
                 <span>See your matches</span>
                 <span className="text-[10px] text-muted-foreground font-normal">Review peer profiles and connect</span>
               </div>
-              <svg className="absolute top-[72%] -left-12 w-28 h-28 hidden xl:block text-muted-foreground/30 z-20" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg className="absolute top-[66%] -left-8 w-28 h-28 hidden xl:block text-muted-foreground/30 z-20" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M 15,15 C 10,40 40,90 90,75" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="4 4" />
                 <path d="M 80,67 L 90,75 L 80,83" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
@@ -765,7 +765,7 @@ export default function LandingPage() {
                 href="/app?mode=register"
                 className="inline-flex h-11 items-center justify-center rounded-lg bg-primary px-6 text-sm font-semibold text-primary-foreground hover:bg-primary/95 transition-all shadow-md cursor-pointer active:scale-[0.98]"
               >
-                Get Started &rarr;
+                Start Exchanging Skills
               </Link>
             </div>
 
@@ -869,8 +869,8 @@ export default function LandingPage() {
               <span>&copy; 2026 Agora Platform. All rights reserved.</span>
             </div>
             <div className="flex gap-6">
-              <a href="#" className="hover:text-foreground transition-colors">Privacy Policy</a>
-              <a href="#" className="hover:text-foreground transition-colors">Terms of Service</a>
+              <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
+              <Link href="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link>
               <a href="mailto:support@agora.exchange" className="hover:text-foreground transition-colors">Feedback & Support</a>
             </div>
           </div>
