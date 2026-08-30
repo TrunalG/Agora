@@ -24,7 +24,7 @@ export type Request = { id: string; senderId: string; receiverId: string; messag
 export type Conversation = { id: string; participantId: string; messages: { id: string; senderId: string; content: string; createdAt: number }[] }
 
 export const skills = ['Figma', 'Design systems', 'User research', 'Webflow', 'React', 'TypeScript', 'Accessibility', 'Photography', 'Brand strategy', 'SEO', 'Go-to-market', 'Copywriting', 'Data visualization', 'Portraits', 'Lightroom', 'Storytelling', 'Marketing', 'Notion', 'Roadmapping', 'User interviews', 'SQL', 'UX writing', 'Content strategy', 'Illustration', 'Python', 'Public speaking', 'Excel', 'Spanish', 'French']
-export const countries = ['Select your country', 'Anywhere', 'United States', 'Canada', 'United Kingdom', 'India', 'Australia']
+export const countries = ['Anywhere', 'United States', 'Canada', 'United Kingdom', 'India', 'Australia']
 
 export const people: Person[] = [
   { id: 'maya', name: 'Maya Chen', username: 'mayachen', role: 'Product designer', location: 'Brooklyn, NY', initials: 'MC', tone: 'bg-accent text-accent-foreground', teaches: ['Figma', 'Design systems', 'User research'], learns: ['Webflow', 'Public speaking'], about: 'I make complex products feel simple. Looking to trade design systems expertise for stronger storytelling and Webflow skills.' },

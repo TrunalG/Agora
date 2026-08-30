@@ -105,7 +105,7 @@ export default function AgoraApp() {
     username: '',
     bio: '',
     about: '',
-    country: 'Select your country',
+    country: 'Anywhere',
     learns: [] as string[],
     teaches: [] as string[],
     image: '',
@@ -170,7 +170,7 @@ export default function AgoraApp() {
     const teaches = userObj.skillsToTeach || []
     const bio = userObj.bio || ''
     const about = userObj.about || ''
-    const location = userObj.country || 'Select your country'
+    const location = userObj.country || 'Anywhere'
     const image = userObj.profileImage || ''
     const links = userObj.links || []
     const email = userObj.email || ''
@@ -1394,7 +1394,7 @@ export default function AgoraApp() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground transition-colors duration-200 antialiased">
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-200 antialiased select-none">
       {/* Top Navbar Header (Agora Workspace Navigation) */}
       <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur-md shadow-xs">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">

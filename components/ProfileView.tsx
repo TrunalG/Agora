@@ -74,7 +74,7 @@ export function ProfileView({
     username: data.username || '',
     bio: data.bio || '',
     about: data.about || '',
-    country: data.country || 'Select your country',
+    country: data.country || 'Anywhere',
     pronouns: data.pronouns || '',
     language: data.language || 'English',
   })
