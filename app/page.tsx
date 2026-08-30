@@ -332,33 +332,33 @@ export default function LandingPage() {
             <div className="mt-16 lg:mt-0 lg:col-span-6 flex justify-center relative">
               
               {/* Sticker 1: Define what you learn */}
-              <div className="absolute -top-14 -left-20 hidden xl:flex flex-col gap-0.5 rounded-lg border border-border/80 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs -rotate-3 select-none z-20">
+              <div className="absolute -top-14 right-12 hidden xl:flex flex-col gap-0.5 rounded-lg border border-border/80 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs -rotate-2 select-none z-20">
                 <span>1. Define what you learn</span>
                 <span className="text-[10px] text-muted-foreground font-normal">Specify the skills you want to master</span>
               </div>
-              <svg className="absolute -top-8 -left-4 w-12 h-10 hidden xl:block text-muted-foreground/40 z-20" viewBox="0 0 50 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M10,5 C22,5 30,12 36,22" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="3 3" />
-                <path d="M29,19 L36,22 L37,14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              <svg className="absolute -top-10 right-28 w-16 h-10 hidden xl:block text-muted-foreground/40 z-20" viewBox="0 0 60 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50,5 C35,12 20,18 10,25" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="3 3" />
+                <path d="M18,22 L10,25 L15,18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
 
               {/* Sticker 2: Offer what you teach */}
-              <div className="absolute top-[48%] -left-36 -translate-y-1/2 hidden xl:flex flex-col gap-0.5 rounded-lg border border-border/80 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs -rotate-3 select-none z-20">
+              <div className="absolute top-[32%] -right-32 -translate-y-1/2 hidden xl:flex flex-col gap-0.5 rounded-lg border border-border/80 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs rotate-2 select-none z-20">
                 <span>2. Offer what you teach</span>
                 <span className="text-[10px] text-muted-foreground font-normal">List the expertise you can share</span>
               </div>
-              <svg className="absolute top-[52%] -left-12 w-12 h-10 hidden xl:block text-muted-foreground/40 z-20" viewBox="0 0 50 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M10,10 C22,12 30,18 36,25" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="3 3" />
-                <path d="M29,22 L36,25 L37,17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              <svg className="absolute top-[32%] -right-12 w-14 h-10 hidden xl:block text-muted-foreground/40 z-20" viewBox="0 0 50 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M45,8 C32,10 20,15 10,20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="3 3" />
+                <path d="M18,16 L10,20 L16,25" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
 
               {/* Sticker 3: Match and swap */}
-              <div className="absolute top-[75%] -right-32 -translate-y-1/2 hidden xl:flex flex-col gap-0.5 rounded-lg border border-border/80 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs rotate-3 select-none z-20">
+              <div className="absolute top-[75%] -right-28 -translate-y-1/2 hidden xl:flex flex-col gap-0.5 rounded-lg border border-border/80 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs -rotate-2 select-none z-20">
                 <span>3. Match and swap!</span>
                 <span className="text-[10px] text-muted-foreground font-normal">Connect directly with zero fees</span>
               </div>
-              <svg className="absolute top-[80%] -right-10 w-12 h-10 hidden xl:block text-muted-foreground/40 z-20" viewBox="0 0 50 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M40,5 C30,10 20,15 10,25" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="3 3" />
-                <path d="M18,24 L10,25 L12,17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              <svg className="absolute top-[75%] -right-10 w-14 h-10 hidden xl:block text-muted-foreground/40 z-20" viewBox="0 0 50 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M45,8 C32,10 20,15 10,20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="3 3" />
+                <path d="M18,16 L10,20 L16,25" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
 
               <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-sm hover:shadow-md transition-all duration-300 z-10 relative">
