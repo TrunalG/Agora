@@ -702,73 +702,98 @@ export default function LandingPage() {
 
       {/* CTA Box Section */}
       <section className="py-20">
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <div className="relative overflow-hidden rounded-3xl border border-border bg-[#0b1329] p-8 sm:p-12 lg:p-16 shadow-xl transition-all hover:border-primary/20">
-            {/* Grid Pattern Background */}
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
-            
-            <div className="relative z-10 lg:grid lg:grid-cols-12 lg:gap-8 items-center">
-              {/* Left Side: Headline, Description & CTA Button */}
-              <div className="lg:col-span-7 flex flex-col justify-center text-left">
-                <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-4">
-                  Ready to trade what you know?
-                </h2>
-                <p className="text-zinc-400 text-sm sm:text-base leading-relaxed max-w-md mb-8">
-                  Join a community of developers, designers, writers, and strategists collaborating directly to upgrade their skill sets.
-                </p>
-                <div className="flex">
-                  <Link
-                    href="/app?mode=register"
-                    className="inline-flex h-11 items-center justify-center rounded-full bg-white px-6 text-sm font-semibold text-[#0b1329] hover:bg-zinc-100 transition-all shadow-md cursor-pointer active:scale-[0.98]"
-                  >
-                    Join the Exchange &rarr;
-                  </Link>
-                </div>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="relative overflow-hidden rounded-3xl border border-border bg-muted/30 p-12 sm:p-20 text-center shadow-xs transition-all duration-300 hover:border-primary/20">
+            <style>{`
+              @keyframes float-gentle {
+                0%, 100% { transform: translateY(0px) rotate(var(--rot-deg, 0deg)); }
+                50% { transform: translateY(-8px) rotate(var(--rot-deg, 0deg)); }
+              }
+              .float-badge {
+                animation: float-gentle 6s ease-in-out infinite;
+              }
+            `}</style>
+
+            {/* Left Side Floating Avatar Badges (Hidden on mobile) */}
+            <div className="hidden lg:block">
+              {/* Maya Chen */}
+              <div 
+                className="absolute left-10 top-10 flex size-12 items-center justify-center rounded-full font-bold text-xs shadow-xs border border-border/50 bg-accent/40 text-accent-foreground select-none float-badge"
+                style={{ '--rot-deg': '-3deg', 'animationDelay': '0s' } as React.CSSProperties}
+              >
+                MC
               </div>
-
-              {/* Right Side: Overlapping, Tilted Agora Member Mockup Cards */}
-              <div className="hidden lg:col-span-5 lg:flex relative h-64 select-none items-end justify-center">
-                {/* Profile Card 1 (Bottom/Left Card) */}
-                <div className="absolute left-6 bottom-[-20px] w-64 rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xl transition-transform duration-500 hover:translate-y-[-8px] hover:rotate-[-8deg] rotate-[-5deg] origin-bottom-right z-10 text-zinc-900">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="flex size-8 items-center justify-center rounded-full bg-zinc-100 font-bold text-xs text-zinc-700">
-                      MC
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-zinc-900">Maya Chen</h4>
-                      <p className="text-[10px] text-zinc-500">Product Designer • Brooklyn, NY</p>
-                    </div>
-                  </div>
-                  <p className="text-[10px] text-zinc-500 italic mb-3">
-                    "I design components in Figma and build design systems. Swapping for React component styling."
-                  </p>
-                  <div className="flex flex-wrap gap-1">
-                    <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-[9px] font-semibold text-zinc-700 border border-zinc-200/50">Teaches Design Systems</span>
-                    <span className="rounded bg-zinc-50 px-1.5 py-0.5 text-[9px] font-medium text-zinc-500 border border-zinc-200/30">Wants React</span>
-                  </div>
-                </div>
-
-                {/* Profile Card 2 (Top/Right Card) */}
-                <div className="absolute right-0 bottom-[-30px] w-64 rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xl transition-transform duration-500 hover:translate-y-[-8px] hover:rotate-[8deg] rotate-[5deg] origin-bottom-left z-20 text-zinc-900">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="flex size-8 items-center justify-center rounded-full bg-zinc-100 font-bold text-xs text-zinc-700">
-                      JL
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-zinc-900">Jordan Lee</h4>
-                      <p className="text-[10px] text-zinc-500">Frontend Engineer • Austin, TX</p>
-                    </div>
-                  </div>
-                  <p className="text-[10px] text-zinc-500 italic mb-3">
-                    "Responsive React app development. Ready to swap tips for design system component tokens."
-                  </p>
-                  <div className="flex flex-wrap gap-1">
-                    <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-[9px] font-semibold text-zinc-700 border border-zinc-200/50">Teaches React</span>
-                    <span className="rounded bg-zinc-50 px-1.5 py-0.5 text-[9px] font-medium text-zinc-500 border border-zinc-200/30">Wants Design Systems</span>
-                  </div>
-                </div>
+              {/* Priya Shah */}
+              <div 
+                className="absolute left-28 top-24 flex size-10 items-center justify-center rounded-full font-bold text-[10px] shadow-xs border border-border/50 bg-muted/40 text-foreground select-none float-badge"
+                style={{ '--rot-deg': '4deg', 'animationDelay': '1.5s' } as React.CSSProperties}
+              >
+                PS
+              </div>
+              {/* Nora Williams */}
+              <div 
+                className="absolute left-16 top-40 flex size-14 items-center justify-center rounded-full font-bold text-sm shadow-xs border border-border/50 bg-muted/40 text-foreground select-none float-badge"
+                style={{ '--rot-deg': '-2deg', 'animationDelay': '3s' } as React.CSSProperties}
+              >
+                NW
+              </div>
+              {/* Sam Rivera */}
+              <div 
+                className="absolute left-32 top-48 flex size-9 items-center justify-center rounded-full font-bold text-[9px] shadow-xs border border-border/50 bg-accent/40 text-accent-foreground select-none float-badge"
+                style={{ '--rot-deg': '5deg', 'animationDelay': '4.5s' } as React.CSSProperties}
+              >
+                SR
               </div>
             </div>
+
+            {/* Centered Content */}
+            <div className="relative z-10 max-w-xl mx-auto flex flex-col items-center">
+              <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground mb-4">
+                Ready to trade what you know?
+              </h2>
+              <p className="text-muted-foreground text-sm sm:text-base leading-relaxed mb-8">
+                Join a community of developers, designers, writers, and strategists collaborating directly to upgrade their skill sets.
+              </p>
+              <Link
+                href="/app?mode=register"
+                className="inline-flex h-11 items-center justify-center rounded-lg bg-primary px-6 text-sm font-semibold text-primary-foreground hover:bg-primary/95 transition-all shadow-md cursor-pointer active:scale-[0.98]"
+              >
+                Get Started &rarr;
+              </Link>
+            </div>
+
+            {/* Right Side Floating Avatar Badges (Hidden on mobile) */}
+            <div className="hidden lg:block">
+              {/* Jordan Lee */}
+              <div 
+                className="absolute right-12 top-12 flex size-12 items-center justify-center rounded-full font-bold text-xs shadow-xs border border-border/50 bg-secondary/40 text-secondary-foreground select-none float-badge"
+                style={{ '--rot-deg': '3deg', 'animationDelay': '0.7s' } as React.CSSProperties}
+              >
+                JL
+              </div>
+              {/* Alex Morgan */}
+              <div 
+                className="absolute right-28 top-20 flex size-9 items-center justify-center rounded-full font-bold text-[9px] shadow-xs border border-border/50 bg-secondary/40 text-secondary-foreground select-none float-badge"
+                style={{ '--rot-deg': '-4deg', 'animationDelay': '2.2s' } as React.CSSProperties}
+              >
+                AM
+              </div>
+              {/* Sam Rivera */}
+              <div 
+                className="absolute right-16 top-36 flex size-14 items-center justify-center rounded-full font-bold text-sm shadow-xs border border-border/50 bg-accent/40 text-accent-foreground select-none float-badge"
+                style={{ '--rot-deg': '2deg', 'animationDelay': '3.7s' } as React.CSSProperties}
+              >
+                SR
+              </div>
+              {/* Nora Williams */}
+              <div 
+                className="absolute right-30 top-48 flex size-10 items-center justify-center rounded-full font-bold text-[10px] shadow-xs border border-border/50 bg-muted/40 text-foreground select-none float-badge"
+                style={{ '--rot-deg': '-5deg', 'animationDelay': '5.2s' } as React.CSSProperties}
+              >
+                NW
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
