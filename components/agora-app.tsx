@@ -979,6 +979,9 @@ export default function AgoraApp() {
                     onClick={() => {
                       setInlineAuthMode('login')
                       setInlineError('')
+                      setEmail('')
+                      setPassword('')
+                      setShowPassword(false)
                     }}
                     className={`flex-1 py-2.5 text-xs font-bold text-center border-b-2 transition-all cursor-pointer ${inlineAuthMode === 'login' ? 'border-primary text-primary bg-background' : 'border-transparent text-muted-foreground hover:bg-muted/40'}`}
                   >
@@ -988,6 +991,9 @@ export default function AgoraApp() {
                     onClick={() => {
                       setInlineAuthMode('register')
                       setInlineError('')
+                      setEmail('')
+                      setPassword('')
+                      setShowPassword(false)
                     }}
                     className={`flex-1 py-2.5 text-xs font-bold text-center border-b-2 transition-all cursor-pointer ${inlineAuthMode === 'register' ? 'border-primary text-primary bg-background' : 'border-transparent text-muted-foreground hover:bg-muted/40'}`}
                   >
