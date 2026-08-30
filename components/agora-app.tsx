@@ -1625,15 +1625,13 @@ export default function AgoraApp() {
 
                   <div className="border-t border-border pt-4 space-y-2">
                     <label className="text-[10px] font-bold text-muted-foreground uppercase block">Location Filter</label>
-                    <select
+                    <CustomSelect
                       value={country}
-                      onChange={(e) => setCountry(e.target.value)}
-                      className="h-9 w-full px-3 text-xs bg-card border border-border rounded-lg outline-none focus:ring-2 focus:ring-primary/20 appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23666%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[length:14px_14px] bg-[right_10px_center] pr-8 cursor-pointer shadow-2xs hover:border-muted-foreground/30 transition-all"
-                    >
-                      {countries.map((c) => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                    </select>
+                      onChange={setCountry}
+                      options={countries}
+                      placeholder="Select country"
+                      className="w-full"
+                    />
                   </div>
                 </div>
 
