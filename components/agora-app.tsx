@@ -43,6 +43,7 @@ import {
 import { Avatar } from '@/components/Avatar'
 import { Chip } from '@/components/Chip'
 import { Modal } from '@/components/Modal'
+import { CustomSelect } from '@/components/CustomSelect'
 const ProfileView = dynamic(() => import('@/components/ProfileView').then((m) => m.ProfileView), {
   loading: () => <div className="p-8 text-center text-xs text-muted-foreground animate-pulse">Loading Profile...</div>,
   ssr: false,
@@ -1408,7 +1409,7 @@ export default function AgoraApp() {
               <Menu className="size-5" />
             </button>
             
-            <button onClick={() => navigateToView('Explore')} className="flex items-center gap-2 group">
+            <button onClick={() => navigateToView('Explore')} className="flex items-center gap-2 group cursor-pointer">
               <span className="font-extrabold text-xl tracking-tight text-primary">Agora</span>
             </button>
 
@@ -1460,7 +1461,7 @@ export default function AgoraApp() {
                 <button
                   key={idx}
                   onClick={() => navigateToView(item.id as View)}
-                  className={`relative flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  className={`relative flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-all ${
                     isActive
                       ? 'bg-primary/5 text-primary'
                       : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
@@ -1483,7 +1484,7 @@ export default function AgoraApp() {
                 <div className="relative">
                   <button
                     onClick={() => setMeDropdownOpen(!meDropdownOpen)}
-                    className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
                   >
                     <Avatar person={me} />
                     <ChevronDown className="size-3 ml-0.5" />
@@ -1689,15 +1690,13 @@ export default function AgoraApp() {
                     <span className="font-semibold text-[10px] text-muted-foreground uppercase flex items-center gap-1">
                       <MapPin className="size-3 text-primary" /> Location
                     </span>
-                    <select
+                    <CustomSelect
                       value={country}
-                      onChange={(e) => setCountry(e.target.value)}
-                      className="h-8.5 px-3 text-xs bg-card border border-border rounded-lg outline-none focus:ring-2 focus:ring-primary/20 appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23666%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[length:12px_12px] bg-[right_8px_center] pr-6 cursor-pointer shadow-2xs transition-all"
-                    >
-                      {countries.map((c) => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                    </select>
+                      onChange={setCountry}
+                      options={countries}
+                      placeholder="Select country"
+                      className="w-36"
+                    />
                   </div>
                 </div>
 
@@ -1726,7 +1725,7 @@ export default function AgoraApp() {
 
                         <div className="space-y-3">
                           {/* Member Main Metadata Header */}
-                          <button onClick={() => setProfile(person)} className="flex items-start gap-3.5 text-left w-full">
+                           <button onClick={() => setProfile(person)} className="flex items-start gap-3.5 text-left w-full cursor-pointer">
                             <Avatar person={person} large />
                             <div className="space-y-0.5">
                               <h3 className="font-bold text-xs text-foreground group-hover:text-primary hover:underline transition-colors">{person.name}</h3>

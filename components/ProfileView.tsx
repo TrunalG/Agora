@@ -5,6 +5,7 @@ import { Camera, Check, ChevronRight, Link as LinkIcon, MapPin, Pencil, Sparkles
 import { Avatar } from '@/components/Avatar'
 import { Chip } from '@/components/Chip'
 import { Modal } from '@/components/Modal'
+import { CustomSelect } from '@/components/CustomSelect'
 import { countries, getProfileChecklist, skills, type Person } from '@/lib/prototype-utils'
 
 interface ProfileViewProps {
@@ -351,17 +352,14 @@ export function ProfileView({
                 ))}
                 {form.teaches.length === 0 && <span className="text-xs text-muted-foreground">No teaching skills added yet</span>}
               </div>
-              <div className="flex gap-2">
-                <select
+              <div className="flex gap-2 items-center">
+                <CustomSelect
                   value={selectedTeachSkill}
-                  onChange={(e) => setSelectedTeachSkill(e.target.value)}
-                  className="h-9 flex-1 px-3 text-xs bg-card border border-border rounded-lg outline-none focus:ring-2 focus:ring-primary/20 appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23666%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[length:14px_14px] bg-[right_10px_center] pr-8 cursor-pointer transition-all"
-                >
-                  <option value="">Select skill to teach...</option>
-                  {skills.filter((s) => !form.teaches.includes(s)).map((s) => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
-                </select>
+                  onChange={setSelectedTeachSkill}
+                  options={skills.filter((s) => !form.teaches.includes(s))}
+                  placeholder="Select skill to teach..."
+                  className="flex-1"
+                />
                 <button
                   type="button"
                   onClick={addTeachSkill}
@@ -386,17 +384,14 @@ export function ProfileView({
                 ))}
                 {form.learns.length === 0 && <span className="text-xs text-muted-foreground">No learning goals added yet</span>}
               </div>
-              <div className="flex gap-2">
-                <select
+              <div className="flex gap-2 items-center">
+                <CustomSelect
                   value={selectedLearnSkill}
-                  onChange={(e) => setSelectedLearnSkill(e.target.value)}
-                  className="h-9 flex-1 px-3 text-xs bg-card border border-border rounded-lg outline-none focus:ring-2 focus:ring-primary/20 appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23666%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[length:14px_14px] bg-[right_10px_center] pr-8 cursor-pointer transition-all"
-                >
-                  <option value="">Select skill to learn...</option>
-                  {skills.filter((s) => !form.learns.includes(s)).map((s) => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
-                </select>
+                  onChange={setSelectedLearnSkill}
+                  options={skills.filter((s) => !form.learns.includes(s))}
+                  placeholder="Select skill to learn..."
+                  className="flex-1"
+                />
                 <button
                   type="button"
                   onClick={addLearnSkill}
@@ -532,31 +527,24 @@ export function ProfileView({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-[10px] font-bold text-muted-foreground uppercase block mb-1">Pronouns</label>
-                <select
+                <CustomSelect
                   value={editForm.pronouns}
-                  onChange={(e) => setEditForm({ ...editForm, pronouns: e.target.value })}
-                  className="h-9 w-full px-3 text-xs bg-card border border-border rounded-lg outline-none focus:ring-2 focus:ring-primary/20 appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23666%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[length:14px_14px] bg-[right_10px_center] pr-8 cursor-pointer transition-all"
-                >
-                  <option value="">Select pronouns</option>
-                  <option value="He/Him">He/Him</option>
-                  <option value="She/Her">She/Her</option>
-                  <option value="They/Them">They/Them</option>
-                  <option value="Other">Other</option>
-                  <option value="Prefer not to say">Prefer not to say</option>
-                </select>
+                  onChange={(val) => setEditForm({ ...editForm, pronouns: val })}
+                  options={['He/Him', 'She/Her', 'They/Them', 'Other', 'Prefer not to say']}
+                  placeholder="Select pronouns"
+                  className="w-full"
+                />
               </div>
 
               <div>
                 <label className="text-[10px] font-bold text-muted-foreground uppercase block mb-1">Location / Country</label>
-                <select
+                <CustomSelect
                   value={editForm.country}
-                  onChange={(e) => setEditForm({ ...editForm, country: e.target.value })}
-                  className="h-9 w-full px-3 text-xs bg-card border border-border rounded-lg outline-none focus:ring-2 focus:ring-primary/20 appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23666%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[length:14px_14px] bg-[right_10px_center] pr-8 cursor-pointer transition-all"
-                >
-                  {countries.map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
+                  onChange={(val) => setEditForm({ ...editForm, country: val })}
+                  options={countries}
+                  placeholder="Select location"
+                  className="w-full"
+                />
               </div>
             </div>
 
