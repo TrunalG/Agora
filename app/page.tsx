@@ -141,15 +141,15 @@ export default function LandingPage() {
       const rect = element.getBoundingClientRect()
       const windowHeight = window.innerHeight
       const elementHeight = rect.height
-      
+
       const startTrigger = windowHeight * 0.70
       const distanceScrolled = startTrigger - rect.top
       const scrollableDistance = elementHeight - 120
-      
+
       let pct = distanceScrolled / scrollableDistance
       if (pct < 0) pct = 0
       if (pct > 1) pct = 1
-      
+
       setScrollProgress(pct)
     }
 
@@ -297,7 +297,7 @@ export default function LandingPage() {
       <section className="relative overflow-hidden min-h-[calc(100vh-4rem)] flex items-center py-12 lg:py-0">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full">
           <div className="lg:grid lg:grid-cols-12 lg:gap-12 items-center">
-            
+
             {/* Copy Block */}
             <div className="lg:col-span-6 flex flex-col justify-center">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-[11px] font-semibold text-muted-foreground tracking-wide w-fit mb-6 shadow-2xs">
@@ -330,35 +330,35 @@ export default function LandingPage() {
 
             {/* Interactive Exchange Sandbox */}
             <div className="mt-16 lg:mt-0 lg:col-span-6 flex justify-center relative">
-              
-              {/* Sticker 1: Define what you learn */}
-              <div className="absolute -top-14 right-12 hidden xl:flex flex-col gap-0.5 rounded-lg border border-border/80 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs -rotate-2 select-none z-20">
-                <span>1. Define what you learn</span>
-                <span className="text-[10px] text-muted-foreground font-normal">Specify the skills you want to master</span>
+
+              {/* Sticker 1: Define what you learn (Top Left) */}
+              <div className="absolute top-10 -left-28 hidden xl:flex flex-col gap-0.5 rounded-lg border border-border/80 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs -rotate-2 select-none z-20">
+                <span>Define what you learn</span>
+                <span className="text-[10px] text-muted-foreground font-normal">Select skills you need to master</span>
               </div>
-              <svg className="absolute -top-10 right-28 w-16 h-10 hidden xl:block text-muted-foreground/40 z-20" viewBox="0 0 60 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M50,5 C35,12 20,18 10,25" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="3 3" />
-                <path d="M18,22 L10,25 L15,18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              <svg className="absolute top-16 -left-12 w-28 h-20 hidden xl:block text-muted-foreground/30 z-20" viewBox="0 0 110 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M 15,10 C 10,30 40,65 90,50" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="4 4" />
+                <path d="M 80,42 L 90,50 L 80,58" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
 
-              {/* Sticker 2: Offer what you teach */}
-              <div className="absolute top-[32%] -right-32 -translate-y-1/2 hidden xl:flex flex-col gap-0.5 rounded-lg border border-border/80 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs rotate-2 select-none z-20">
-                <span>2. Offer what you teach</span>
-                <span className="text-[10px] text-muted-foreground font-normal">List the expertise you can share</span>
+              {/* Sticker 2: Offer what you teach (Right Side) */}
+              <div className="absolute top-[26%] -right-20 -translate-y-1/2 hidden xl:flex flex-col gap-0.5 rounded-lg border border-border/80 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs rotate-2 select-none z-20">
+                <span>Offer what you teach</span>
+                <span className="text-[10px] text-muted-foreground font-normal">List expertise you can share</span>
               </div>
-              <svg className="absolute top-[32%] -right-12 w-14 h-10 hidden xl:block text-muted-foreground/40 z-20" viewBox="0 0 50 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M45,8 C32,10 20,15 10,20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="3 3" />
-                <path d="M18,16 L10,20 L16,25" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              <svg className="absolute top-[28%] -right-6 w-24 h-24 hidden xl:block text-muted-foreground/30 z-20" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M 80,10 C 85,35 65,70 15,60" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="4 4" />
+                <path d="M 25,52 L 15,60 L 23,70" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
 
-              {/* Sticker 3: Match and swap */}
-              <div className="absolute top-[75%] -right-28 -translate-y-1/2 hidden xl:flex flex-col gap-0.5 rounded-lg border border-border/80 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs -rotate-2 select-none z-20">
-                <span>3. Match and swap!</span>
-                <span className="text-[10px] text-muted-foreground font-normal">Connect directly with zero fees</span>
+              {/* Sticker 3: Match and swap! (Bottom Left) */}
+              <div className="absolute top-[70%] -left-32 -translate-y-1/2 hidden xl:flex flex-col gap-0.5 rounded-lg border border-border/80 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs -rotate-2 select-none z-20">
+                <span>See your matches</span>
+                <span className="text-[10px] text-muted-foreground font-normal">Review peer profiles and connect</span>
               </div>
-              <svg className="absolute top-[75%] -right-10 w-14 h-10 hidden xl:block text-muted-foreground/40 z-20" viewBox="0 0 50 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M45,8 C32,10 20,15 10,20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="3 3" />
-                <path d="M18,16 L10,20 L16,25" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              <svg className="absolute top-[72%] -left-12 w-28 h-28 hidden xl:block text-muted-foreground/30 z-20" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M 15,15 C 10,40 40,90 90,75" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="4 4" />
+                <path d="M 80,67 L 90,75 L 80,83" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
 
               <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-sm hover:shadow-md transition-all duration-300 z-10 relative">
@@ -376,11 +376,10 @@ export default function LandingPage() {
                         <button
                           key={skill}
                           onClick={() => setSelectedLearn(skill)}
-                          className={`px-2.5 py-1 rounded-md text-xs font-semibold border transition-all duration-200 cursor-pointer ${
-                            selectedLearn === skill
+                          className={`px-2.5 py-1 rounded-md text-xs font-semibold border transition-all duration-200 cursor-pointer ${selectedLearn === skill
                               ? 'bg-primary text-primary-foreground border-primary shadow-xs scale-102'
                               : 'bg-background hover:bg-muted/40 border-border text-muted-foreground hover:text-foreground'
-                          }`}
+                            }`}
                         >
                           {skill}
                         </button>
@@ -396,11 +395,10 @@ export default function LandingPage() {
                         <button
                           key={skill}
                           onClick={() => setSelectedTeach(skill)}
-                          className={`px-2.5 py-1 rounded-md text-xs font-semibold border transition-all duration-200 cursor-pointer ${
-                            selectedTeach === skill
+                          className={`px-2.5 py-1 rounded-md text-xs font-semibold border transition-all duration-200 cursor-pointer ${selectedTeach === skill
                               ? 'bg-primary text-primary-foreground border-primary shadow-xs scale-102'
                               : 'bg-background hover:bg-muted/40 border-border text-muted-foreground hover:text-foreground'
-                          }`}
+                            }`}
                         >
                           {skill}
                         </button>
@@ -412,11 +410,10 @@ export default function LandingPage() {
                   <div className="pt-4 border-t border-border/50">
                     <div className="flex justify-between items-center mb-3">
                       <span className="text-xs font-bold text-foreground">Matching Peer Preview</span>
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-extrabold tracking-tight uppercase border transition-all duration-300 ${
-                        isPerfectMatch
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-extrabold tracking-tight uppercase border transition-all duration-300 ${isPerfectMatch
                           ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
                           : 'bg-amber-500/10 text-amber-600 border-amber-500/20'
-                      }`}>
+                        }`}>
                         <span className="flex items-center gap-1">
                           <svg className="size-2.5 text-current shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3.5}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
@@ -474,7 +471,7 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
+
             {/* Feature 1 (Col-span 2) */}
             <div className="group md:col-span-2 rounded-2xl border border-border bg-card p-8 flex flex-col justify-between shadow-xs transition-all duration-300 hover:border-primary/30 hover:shadow-sm hover:-translate-y-0.5">
               <div>
@@ -575,9 +572,9 @@ export default function LandingPage() {
           <div className="relative mt-12 max-w-4xl mx-auto" ref={timelineRef}>
             {/* Center track vertical line */}
             <div className="absolute left-8 md:left-1/2 top-5 bottom-5 w-[2px] -translate-x-1/2 bg-border/40 overflow-hidden">
-              <div 
+              <div
                 className="absolute top-0 left-0 w-full bg-primary origin-top transition-transform duration-100 ease-out"
-                style={{ 
+                style={{
                   height: '100%',
                   transform: `scaleY(${scrollProgress})`
                 }}
@@ -607,18 +604,16 @@ export default function LandingPage() {
                 const isActive = scrollProgress >= thresholds[idx];
 
                 return (
-                  <div 
-                    key={idx} 
-                    className={`relative flex flex-col md:flex-row items-start md:items-center justify-between transition-all duration-700 ease-out ${
-                      isActive ? 'opacity-100 translate-y-0' : 'opacity-20 translate-y-4'
-                    }`}
+                  <div
+                    key={idx}
+                    className={`relative flex flex-col md:flex-row items-start md:items-center justify-between transition-all duration-700 ease-out ${isActive ? 'opacity-100 translate-y-0' : 'opacity-20 translate-y-4'
+                      }`}
                   >
                     {/* Content Block */}
-                    <div className={`w-full md:w-[45%] pl-16 md:pl-0 ${
-                      idx % 2 === 0 
-                        ? 'md:pr-12 md:text-right flex flex-col md:items-end' 
+                    <div className={`w-full md:w-[45%] pl-16 md:pl-0 ${idx % 2 === 0
+                        ? 'md:pr-12 md:text-right flex flex-col md:items-end'
                         : 'md:order-last md:pl-12 md:text-left flex flex-col md:items-start'
-                    }`}>
+                      }`}>
                       <span className="text-xs font-mono font-bold text-primary mb-1 uppercase tracking-wider">Step {step.number}</span>
                       <h3 className="text-xl font-extrabold text-foreground mb-3">{step.title}</h3>
                       <p className="text-sm text-muted-foreground leading-relaxed">
@@ -627,12 +622,11 @@ export default function LandingPage() {
                     </div>
 
                     {/* Step Node Bubble */}
-                    <div 
-                      className={`absolute left-8 md:left-1/2 -translate-x-1/2 flex size-10 items-center justify-center rounded-full font-bold text-sm transition-all duration-500 border-2 z-10 ${
-                        isActive 
-                          ? 'bg-primary border-primary text-primary-foreground scale-110 shadow-lg shadow-primary/20' 
+                    <div
+                      className={`absolute left-8 md:left-1/2 -translate-x-1/2 flex size-10 items-center justify-center rounded-full font-bold text-sm transition-all duration-500 border-2 z-10 ${isActive
+                          ? 'bg-primary border-primary text-primary-foreground scale-110 shadow-lg shadow-primary/20'
                           : 'bg-card border-border text-muted-foreground scale-90'
-                      }`}
+                        }`}
                     >
                       {step.number}
                     </div>
@@ -676,7 +670,7 @@ export default function LandingPage() {
               animation-play-state: paused;
             }
           `}</style>
-          
+
           {/* Left and Right Fade Gradients */}
           <div className="absolute left-0 top-0 bottom-0 w-28 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none"></div>
           <div className="absolute right-0 top-0 bottom-0 w-28 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none"></div>
@@ -684,8 +678,8 @@ export default function LandingPage() {
           <div className="marquee-inner flex gap-6 px-4">
             {/* Map the testimonials twice to achieve seamless visual looping when moving to -50% */}
             {[...testimonials, ...testimonials].map((t, idx) => (
-              <div 
-                key={idx} 
+              <div
+                key={idx}
                 className="w-[340px] shrink-0 rounded-2xl border border-border bg-card p-6 shadow-2xs flex flex-col justify-between transition-all duration-300 hover:border-primary/20 hover:shadow-xs"
               >
                 <p className="text-sm text-muted-foreground leading-relaxed italic mb-6">
@@ -708,27 +702,72 @@ export default function LandingPage() {
 
       {/* CTA Box Section */}
       <section className="py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="rounded-3xl border border-border bg-card p-8 sm:p-16 text-center shadow-lg max-w-4xl mx-auto transition-all hover:border-primary/20">
-            <h2 className="text-3xl font-extrabold tracking-tight text-foreground mb-4">
-              Ready to trade what you know?
-            </h2>
-            <p className="text-muted-foreground text-sm sm:text-base leading-relaxed max-w-xl mx-auto mb-8">
-              Join a community of developers, designers, writers, and strategists collaborating directly to upgrade their skill sets.
-            </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Link
-                href="/app?mode=register"
-                className="inline-flex h-12 items-center justify-center rounded-lg bg-primary px-6 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-all shadow-md cursor-pointer active:scale-[0.98]"
-              >
-                Create Free Account
-              </Link>
-              <Link
-                href="/app"
-                className="inline-flex h-12 items-center justify-center rounded-lg border border-border bg-background px-6 text-sm font-medium text-foreground hover:bg-muted/20 transition-all cursor-pointer active:scale-[0.98]"
-              >
-                Browse the Community
-              </Link>
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <div className="relative overflow-hidden rounded-3xl border border-border bg-[#0b1329] p-8 sm:p-12 lg:p-16 shadow-xl transition-all hover:border-primary/20">
+            {/* Grid Pattern Background */}
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
+            
+            <div className="relative z-10 lg:grid lg:grid-cols-12 lg:gap-8 items-center">
+              {/* Left Side: Headline, Description & CTA Button */}
+              <div className="lg:col-span-7 flex flex-col justify-center text-left">
+                <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-4">
+                  Ready to trade what you know?
+                </h2>
+                <p className="text-zinc-400 text-sm sm:text-base leading-relaxed max-w-md mb-8">
+                  Join a community of developers, designers, writers, and strategists collaborating directly to upgrade their skill sets.
+                </p>
+                <div className="flex">
+                  <Link
+                    href="/app?mode=register"
+                    className="inline-flex h-11 items-center justify-center rounded-full bg-white px-6 text-sm font-semibold text-[#0b1329] hover:bg-zinc-100 transition-all shadow-md cursor-pointer active:scale-[0.98]"
+                  >
+                    Join the Exchange &rarr;
+                  </Link>
+                </div>
+              </div>
+
+              {/* Right Side: Overlapping, Tilted Agora Member Mockup Cards */}
+              <div className="hidden lg:col-span-5 lg:flex relative h-64 select-none items-end justify-center">
+                {/* Profile Card 1 (Bottom/Left Card) */}
+                <div className="absolute left-6 bottom-[-20px] w-64 rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xl transition-transform duration-500 hover:translate-y-[-8px] hover:rotate-[-8deg] rotate-[-5deg] origin-bottom-right z-10 text-zinc-900">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="flex size-8 items-center justify-center rounded-full bg-zinc-100 font-bold text-xs text-zinc-700">
+                      MC
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-zinc-900">Maya Chen</h4>
+                      <p className="text-[10px] text-zinc-500">Product Designer • Brooklyn, NY</p>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-zinc-500 italic mb-3">
+                    "I design components in Figma and build design systems. Swapping for React component styling."
+                  </p>
+                  <div className="flex flex-wrap gap-1">
+                    <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-[9px] font-semibold text-zinc-700 border border-zinc-200/50">Teaches Design Systems</span>
+                    <span className="rounded bg-zinc-50 px-1.5 py-0.5 text-[9px] font-medium text-zinc-500 border border-zinc-200/30">Wants React</span>
+                  </div>
+                </div>
+
+                {/* Profile Card 2 (Top/Right Card) */}
+                <div className="absolute right-0 bottom-[-30px] w-64 rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xl transition-transform duration-500 hover:translate-y-[-8px] hover:rotate-[8deg] rotate-[5deg] origin-bottom-left z-20 text-zinc-900">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="flex size-8 items-center justify-center rounded-full bg-zinc-100 font-bold text-xs text-zinc-700">
+                      JL
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-zinc-900">Jordan Lee</h4>
+                      <p className="text-[10px] text-zinc-500">Frontend Engineer • Austin, TX</p>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-zinc-500 italic mb-3">
+                    "Responsive React app development. Ready to swap tips for design system component tokens."
+                  </p>
+                  <div className="flex flex-wrap gap-1">
+                    <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-[9px] font-semibold text-zinc-700 border border-zinc-200/50">Teaches React</span>
+                    <span className="rounded bg-zinc-50 px-1.5 py-0.5 text-[9px] font-medium text-zinc-500 border border-zinc-200/30">Wants Design Systems</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
