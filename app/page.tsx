@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -129,6 +129,41 @@ export default function LandingPage() {
   // Interactive Sandbox state
   const [selectedLearn, setSelectedLearn] = useState('React')
   const [selectedTeach, setSelectedTeach] = useState('Design Systems')
+
+  // Timeline Scroll Tracking State
+  const [scrollProgress, setScrollProgress] = useState(0)
+  const timelineRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!timelineRef.current) return
+      const element = timelineRef.current
+      const rect = element.getBoundingClientRect()
+      const windowHeight = window.innerHeight
+      const elementHeight = rect.height
+      
+      const startTrigger = windowHeight * 0.70
+      const distanceScrolled = startTrigger - rect.top
+      const scrollableDistance = elementHeight - 120
+      
+      let pct = distanceScrolled / scrollableDistance
+      if (pct < 0) pct = 0
+      if (pct > 1) pct = 1
+      
+      setScrollProgress(pct)
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    window.addEventListener('resize', handleScroll)
+    // Run initially with a tiny timeout to ensure Layout layout is finished
+    const t = setTimeout(handleScroll, 50)
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('resize', handleScroll)
+      clearTimeout(t)
+    }
+  }, [])
 
   useEffect(() => {
     async function checkSession() {
@@ -494,9 +529,9 @@ export default function LandingPage() {
       </section>
 
       {/* How it Works Section */}
-      <section id="how-it-works" className="py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-16">
+      <section id="how-it-works" className="py-24 border-b border-border/40 bg-muted/5">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-20">
             <h2 className="text-3xl font-extrabold tracking-tight text-foreground mb-4">
               How Agora works in three steps
             </h2>
@@ -505,35 +540,78 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
-            
-            {/* Step 1 */}
-            <div className="flex flex-col items-center text-center">
-              <div className="text-3xl font-light text-primary/30 font-mono mb-4">01.</div>
-              <h3 className="text-lg font-bold text-foreground mb-2">Set up your profile</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
-                Create your card. Define exactly what you are building, the tools you teach, and what you need next.
-              </p>
+          {/* Interactive Scroll Timeline Container */}
+          <div className="relative mt-12 max-w-4xl mx-auto" ref={timelineRef}>
+            {/* Center track vertical line */}
+            <div className="absolute left-8 md:left-1/2 top-5 bottom-5 w-[2px] -translate-x-1/2 bg-border/40 overflow-hidden">
+              <div 
+                className="absolute top-0 left-0 w-full bg-primary origin-top transition-transform duration-100 ease-out"
+                style={{ 
+                  height: '100%',
+                  transform: `scaleY(${scrollProgress})`
+                }}
+              />
             </div>
 
-            {/* Step 2 */}
-            <div className="flex flex-col items-center text-center">
-              <div className="text-3xl font-light text-primary/30 font-mono mb-4">02.</div>
-              <h3 className="text-lg font-bold text-foreground mb-2">Find your pairing</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
-                Match with peers. Discover matching profiles based on reciprocated teaches/learns scores.
-              </p>
-            </div>
+            {/* Timeline Steps Stack */}
+            <div className="space-y-20 relative">
+              {[
+                {
+                  number: "01",
+                  title: "Set up your profile",
+                  description: "Create your card. Define exactly what you are building, the tools you teach, and what you need next."
+                },
+                {
+                  number: "02",
+                  title: "Find your pairing",
+                  description: "Match with peers. Discover matching profiles based on reciprocated teaches/learns scores."
+                },
+                {
+                  number: "03",
+                  title: "Start the exchange",
+                  description: "Swap knowledge. Connect in our secure inbox to talk, share guidance, and collaborate on your growth goals."
+                }
+              ].map((step, idx) => {
+                const thresholds = [0.15, 0.50, 0.85];
+                const isActive = scrollProgress >= thresholds[idx];
 
-            {/* Step 3 */}
-            <div className="flex flex-col items-center text-center">
-              <div className="text-3xl font-light text-primary/30 font-mono mb-4">03.</div>
-              <h3 className="text-lg font-bold text-foreground mb-2">Start the exchange</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
-                Swap knowledge. Connect in our secure inbox to talk, share guidance, and collaborate on your growth goals.
-              </p>
-            </div>
+                return (
+                  <div 
+                    key={idx} 
+                    className={`relative flex flex-col md:flex-row items-start md:items-center justify-between transition-all duration-700 ease-out ${
+                      isActive ? 'opacity-100 translate-y-0' : 'opacity-20 translate-y-4'
+                    }`}
+                  >
+                    {/* Content Block */}
+                    <div className={`w-full md:w-[45%] pl-16 md:pl-0 ${
+                      idx % 2 === 0 
+                        ? 'md:pr-12 md:text-right flex flex-col md:items-end' 
+                        : 'md:order-last md:pl-12 md:text-left flex flex-col md:items-start'
+                    }`}>
+                      <span className="text-xs font-mono font-bold text-primary mb-1 uppercase tracking-wider">Step {step.number}</span>
+                      <h3 className="text-xl font-extrabold text-foreground mb-3">{step.title}</h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {step.description}
+                      </p>
+                    </div>
 
+                    {/* Step Node Bubble */}
+                    <div 
+                      className={`absolute left-8 md:left-1/2 -translate-x-1/2 flex size-10 items-center justify-center rounded-full font-bold text-sm transition-all duration-500 border-2 z-10 ${
+                        isActive 
+                          ? 'bg-primary border-primary text-primary-foreground scale-110 shadow-lg shadow-primary/20' 
+                          : 'bg-card border-border text-muted-foreground scale-90'
+                      }`}
+                    >
+                      {step.number}
+                    </div>
+
+                    {/* Desktop Right Side Spacer */}
+                    <div className="hidden md:block w-full md:w-[45%]" />
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </section>
