@@ -1764,12 +1764,27 @@ export default function AgoraApp() {
 
                         {/* Interactive Buttons */}
                         <div className="flex items-center gap-2 pt-3 border-t border-border justify-end">
-                          <button
-                            onClick={() => startConversation(person.id)}
-                            className="px-4 py-1.5 rounded-lg border border-primary text-xs font-bold text-primary hover:bg-primary/5 transition-all"
-                          >
-                            Message
-                          </button>
+                          {(() => {
+                            const isConnected = isMemberConnected(person.id)
+                            return (
+                              <button
+                                onClick={() => {
+                                  if (isConnected) {
+                                    startConversation(person.id)
+                                  }
+                                }}
+                                disabled={!isConnected}
+                                className={`px-4 py-1.5 rounded-lg border text-xs font-bold transition-all ${
+                                  isConnected
+                                    ? 'border-primary text-primary hover:bg-primary/5 cursor-pointer'
+                                    : 'border-muted bg-muted/40 text-muted-foreground cursor-not-allowed opacity-60'
+                                }`}
+                                title={isConnected ? 'Send a message' : 'Connect with this member first to send messages'}
+                              >
+                                Message
+                              </button>
+                            )
+                          })()}
 
                           {isPending ? (
                             <button
