@@ -294,8 +294,8 @@ export default function LandingPage() {
       )}
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-16 sm:py-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section className="relative overflow-hidden min-h-[calc(100vh-4rem)] flex items-center py-12 lg:py-0">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full">
           <div className="lg:grid lg:grid-cols-12 lg:gap-12 items-center">
             
             {/* Copy Block */}
@@ -329,8 +329,28 @@ export default function LandingPage() {
             </div>
 
             {/* Interactive Exchange Sandbox */}
-            <div className="mt-12 lg:mt-0 lg:col-span-6 flex justify-center">
-              <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="mt-16 lg:mt-0 lg:col-span-6 flex justify-center relative">
+              
+              {/* Sticker 1: Try selecting tags */}
+              <div className="absolute -top-12 -left-12 hidden xl:flex items-center gap-1.5 rounded-lg border border-border/80 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs -rotate-3 select-none z-20">
+                <span>Try selecting tags</span>
+              </div>
+              <svg className="absolute -top-6 -left-2 w-12 h-10 hidden xl:block text-muted-foreground/40 z-20 animate-pulse" viewBox="0 0 50 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10,5 C25,5 35,15 40,25" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="3 3" />
+                <path d="M33,22 L40,25 L41,17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+
+              {/* Sticker 2: Reciprocal matching */}
+              <div className="absolute top-[45%] -right-28 -translate-y-1/2 hidden xl:flex flex-col gap-0.5 rounded-lg border border-border/80 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs rotate-3 select-none z-20">
+                <span>Instant match</span>
+                <span className="text-[10px] text-muted-foreground font-normal">Based on teaches/learns alignment</span>
+              </div>
+              <svg className="absolute top-[52%] -right-6 w-12 h-12 hidden xl:block text-muted-foreground/40 z-20" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M40,10 C30,20 20,25 10,35" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="3 3" />
+                <path d="M18,34 L10,35 L12,27" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+
+              <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-sm hover:shadow-md transition-all duration-300 z-10 relative">
                 <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/50">
                   <span className="text-[9px] font-mono tracking-widest text-muted-foreground font-bold uppercase">00 // MATCH SIMULATOR</span>
                   <span className="inline-flex size-2 rounded-full bg-emerald-500 animate-pulse"></span>
