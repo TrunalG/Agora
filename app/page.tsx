@@ -552,7 +552,7 @@ export default function LandingPage() {
         </div>
 
         {/* Seamless Marquee Slider Loop */}
-        <div className="relative w-full overflow-hidden py-4">
+        <div className="relative mx-auto max-w-7xl overflow-hidden py-4">
           <style>{`
             @keyframes marquee {
               0% { transform: translateX(0); }
