@@ -718,31 +718,38 @@ export default function LandingPage() {
             <div className="hidden lg:block">
               {/* Maya Chen */}
               <div 
-                className="absolute left-10 top-10 flex size-12 items-center justify-center rounded-full shadow-xs border border-border/50 bg-background overflow-hidden select-none float-badge"
+                className="absolute left-[4%] top-[18%] flex size-12 items-center justify-center rounded-full shadow-xs border border-border/50 bg-background overflow-hidden select-none float-badge"
                 style={{ '--rot-deg': '-3deg', 'animationDelay': '0s' } as React.CSSProperties}
               >
                 <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&h=150&q=80" alt="Member Portrait" className="object-cover w-full h-full pointer-events-none" />
               </div>
               {/* Priya Shah */}
               <div 
-                className="absolute left-28 top-24 flex size-10 items-center justify-center rounded-full shadow-xs border border-border/50 bg-background overflow-hidden select-none float-badge"
+                className="absolute left-[18%] top-[10%] flex size-9 items-center justify-center rounded-full shadow-xs border border-border/50 bg-background overflow-hidden select-none float-badge"
                 style={{ '--rot-deg': '4deg', 'animationDelay': '1.5s' } as React.CSSProperties}
               >
                 <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150&q=80" alt="Member Portrait" className="object-cover w-full h-full pointer-events-none" />
               </div>
               {/* Nora Williams */}
               <div 
-                className="absolute left-16 top-40 flex size-14 items-center justify-center rounded-full shadow-xs border border-border/50 bg-background overflow-hidden select-none float-badge"
+                className="absolute left-[10%] top-[45%] flex size-14 items-center justify-center rounded-full shadow-xs border border-border/50 bg-background overflow-hidden select-none float-badge"
                 style={{ '--rot-deg': '-2deg', 'animationDelay': '3s' } as React.CSSProperties}
               >
                 <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&h=150&q=80" alt="Member Portrait" className="object-cover w-full h-full pointer-events-none" />
               </div>
               {/* Sam Rivera */}
               <div 
-                className="absolute left-32 top-48 flex size-9 items-center justify-center rounded-full shadow-xs border border-border/50 bg-background overflow-hidden select-none float-badge"
+                className="absolute left-[22%] top-[68%] flex size-10 items-center justify-center rounded-full shadow-xs border border-border/50 bg-background overflow-hidden select-none float-badge"
                 style={{ '--rot-deg': '5deg', 'animationDelay': '4.5s' } as React.CSSProperties}
               >
                 <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&h=150&q=80" alt="Member Portrait" className="object-cover w-full h-full pointer-events-none" />
+              </div>
+              {/* Extra Member 1 */}
+              <div 
+                className="absolute left-[5%] top-[72%] flex size-11 items-center justify-center rounded-full shadow-xs border border-border/50 bg-background overflow-hidden select-none float-badge"
+                style={{ '--rot-deg': '-1deg', 'animationDelay': '2s' } as React.CSSProperties}
+              >
+                <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&h=150&q=80" alt="Member Portrait" className="object-cover w-full h-full pointer-events-none" />
               </div>
             </div>
 
@@ -766,31 +773,38 @@ export default function LandingPage() {
             <div className="hidden lg:block">
               {/* Jordan Lee */}
               <div 
-                className="absolute right-12 top-12 flex size-12 items-center justify-center rounded-full shadow-xs border border-border/50 bg-background overflow-hidden select-none float-badge"
+                className="absolute right-[4%] top-[20%] flex size-12 items-center justify-center rounded-full shadow-xs border border-border/50 bg-background overflow-hidden select-none float-badge"
                 style={{ '--rot-deg': '3deg', 'animationDelay': '0.7s' } as React.CSSProperties}
               >
                 <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&h=150&q=80" alt="Member Portrait" className="object-cover w-full h-full pointer-events-none" />
               </div>
               {/* Alex Morgan */}
               <div 
-                className="absolute right-28 top-20 flex size-9 items-center justify-center rounded-full shadow-xs border border-border/50 bg-background overflow-hidden select-none float-badge"
+                className="absolute right-[18%] top-[12%] flex size-9 items-center justify-center rounded-full shadow-xs border border-border/50 bg-background overflow-hidden select-none float-badge"
                 style={{ '--rot-deg': '-4deg', 'animationDelay': '2.2s' } as React.CSSProperties}
               >
                 <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=150&h=150&q=80" alt="Member Portrait" className="object-cover w-full h-full pointer-events-none" />
               </div>
               {/* Sam Rivera */}
               <div 
-                className="absolute right-16 top-36 flex size-14 items-center justify-center rounded-full shadow-xs border border-border/50 bg-background overflow-hidden select-none float-badge"
+                className="absolute right-[10%] top-[48%] flex size-14 items-center justify-center rounded-full shadow-xs border border-border/50 bg-background overflow-hidden select-none float-badge"
                 style={{ '--rot-deg': '2deg', 'animationDelay': '3.7s' } as React.CSSProperties}
               >
                 <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=150&h=150&q=80" alt="Member Portrait" className="object-cover w-full h-full pointer-events-none" />
               </div>
               {/* Nora Williams */}
               <div 
-                className="absolute right-30 top-48 flex size-10 items-center justify-center rounded-full shadow-xs border border-border/50 bg-background overflow-hidden select-none float-badge"
+                className="absolute right-[24%] top-[70%] flex size-10 items-center justify-center rounded-full shadow-xs border border-border/50 bg-background overflow-hidden select-none float-badge"
                 style={{ '--rot-deg': '-5deg', 'animationDelay': '5.2s' } as React.CSSProperties}
               >
                 <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&h=150&q=80" alt="Member Portrait" className="object-cover w-full h-full pointer-events-none" />
+              </div>
+              {/* Extra Member 2 */}
+              <div 
+                className="absolute right-[5%] top-[72%] flex size-11 items-center justify-center rounded-full shadow-xs border border-border/50 bg-background overflow-hidden select-none float-badge"
+                style={{ '--rot-deg': '1deg', 'animationDelay': '1.2s' } as React.CSSProperties}
+              >
+                <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=150&h=150&q=80" alt="Member Portrait" className="object-cover w-full h-full pointer-events-none" />
               </div>
             </div>
 
