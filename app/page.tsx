@@ -75,6 +75,52 @@ const simulatorData = [
   }
 ]
 
+// Professional testimonials dataset
+const testimonials = [
+  {
+    quote: "I wanted to learn Webflow to turn my static layouts into live sites. I connected with Jordan who wanted design system guidance. In three weeks, I built my first portfolio and helped him clean up his design assets.",
+    name: "Maya Chen",
+    initials: "MC",
+    role: "Product Designer",
+    location: "Brooklyn, NY"
+  },
+  {
+    quote: "Growth marketing was a mystery to me. Through Agora, I found Priya who was writing a copy guide but struggled with dashboard design. I did her layout UI, and she reviewed my SEO configuration. Great trade.",
+    name: "Jordan Lee",
+    initials: "JL",
+    role: "Frontend Engineer",
+    location: "Austin, TX"
+  },
+  {
+    quote: "It is hard to find high-quality learning partnerships without sales pitches. Agora's strict connection requests policy makes it a refreshing, productive space. Just pure value sharing between creators.",
+    name: "Priya Shah",
+    initials: "PS",
+    role: "Growth Strategist",
+    location: "Toronto, CA"
+  },
+  {
+    quote: "I was designing microcopy for a finance app but needed search visibility tips. I swapped UX writing insights with an SEO consultant, and our organic search rankings improved shortly after.",
+    name: "Nora Williams",
+    initials: "NW",
+    role: "Content Designer",
+    location: "London, UK"
+  },
+  {
+    quote: "I offered technical SEO auditing but struggled with content layout. Working with Nora helped me design clear hierarchy guides. The feedback was extremely actionable.",
+    name: "Alex Morgan",
+    initials: "AM",
+    role: "SEO Consultant",
+    location: "Chicago, IL"
+  },
+  {
+    quote: "I trade SaaS landing page copy advice for help with React components and state setup. It saves me weeks of trying to figure out frontend quirks alone.",
+    name: "Sam Rivera",
+    initials: "SR",
+    role: "SaaS Copywriter",
+    location: "Los Angeles, CA"
+  }
+]
+
 export default function LandingPage() {
   const router = useRouter()
   const [checkingSession, setCheckingSession] = useState(true)
@@ -228,7 +274,7 @@ export default function LandingPage() {
                 Grow your connections.
               </h1>
               <p className="text-sm sm:text-base text-muted-foreground leading-relaxed max-w-lg mb-8">
-                Connect directly with other builders to swap expertise. Trade what you know for what you need next — no fees, no tokens, no middlemen.
+                Connect directly with other builders to swap expertise. Trade what you know for what you need next, with no fees, no tokens, and no middlemen.
               </p>
               <div className="flex flex-wrap gap-3.5">
                 <Link
@@ -305,7 +351,12 @@ export default function LandingPage() {
                           ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
                           : 'bg-amber-500/10 text-amber-600 border-amber-500/20'
                       }`}>
-                        ⚡ {isPerfectMatch ? '100% Perfect Match' : '75% Skill Match'}
+                        <span className="flex items-center gap-1">
+                          <svg className="size-2.5 text-current shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+                          </svg>
+                          {isPerfectMatch ? 'Perfect Match' : 'Skill Match'}
+                        </span>
                       </span>
                     </div>
 
@@ -363,7 +414,12 @@ export default function LandingPage() {
               <div>
                 <div className="flex items-center justify-between mb-5">
                   <span className="text-[9px] font-mono tracking-widest font-bold text-muted-foreground uppercase border border-border bg-muted/40 px-2 py-0.5 rounded">01 // AUTOMATED MATCHING</span>
-                  <span className="text-[10px] text-emerald-600 font-semibold tracking-wide flex items-center gap-1">⚡ Reciprocal Match</span>
+                  <span className="text-[10px] text-emerald-600 font-semibold tracking-wide flex items-center gap-1">
+                    <svg className="size-3 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+                    </svg>
+                    Reciprocal Match
+                  </span>
                 </div>
                 <h3 className="text-lg font-bold text-foreground mb-2">Smart Matchmaking Engine</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed max-w-lg">
@@ -376,7 +432,7 @@ export default function LandingPage() {
                   <span className="flex size-7 items-center justify-center rounded-full bg-muted text-[9px] font-bold ring-2 ring-card">JL</span>
                   <span className="flex size-7 items-center justify-center rounded-full bg-accent text-[9px] font-bold ring-2 ring-card">PS</span>
                 </div>
-                <span className="text-xs text-muted-foreground font-medium">Join 3,000+ members trading skills globally</span>
+                <span className="text-xs text-muted-foreground font-medium font-sans">Connect with a growing network of active professionals</span>
               </div>
             </div>
 
@@ -429,7 +485,7 @@ export default function LandingPage() {
               <div className="mt-8 pt-6 border-t border-border/50 flex gap-4 text-xs font-medium text-muted-foreground">
                 <span className="border border-border/60 rounded-md px-2.5 py-1 bg-background">📍 Country Filters</span>
                 <span className="border border-border/60 rounded-md px-2.5 py-1 bg-background">🎓 Skill Tags</span>
-                <span className="border border-border/60 rounded-md px-2.5 py-1 bg-background">⚡ Match Score</span>
+                <span className="border border-border/60 rounded-md px-2.5 py-1 bg-background">Match Score</span>
               </div>
             </div>
 
@@ -483,7 +539,7 @@ export default function LandingPage() {
       </section>
 
       {/* Testimonials Section */}
-      <section id="testimonials" className="py-20 bg-muted/20 border-t border-b border-border/80">
+      <section id="testimonials" className="py-20 bg-muted/20 border-t border-b border-border/80 overflow-hidden">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-16">
             <h2 className="text-3xl font-extrabold tracking-tight text-foreground mb-4">
@@ -493,57 +549,46 @@ export default function LandingPage() {
               Hear from professionals who used peer skill trades to expand their horizons.
             </p>
           </div>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
-            {/* Testimonial 1 */}
-            <div className="group rounded-2xl border border-border bg-card p-6 shadow-xs flex flex-col justify-between transition-all duration-300 hover:border-primary/20 hover:shadow-sm">
-              <p className="text-sm text-muted-foreground leading-relaxed italic mb-6">
-                "I wanted to learn Webflow to turn my static layouts into live sites. I connected with Jordan who wanted design system guidance. In three weeks, I built my first portfolio and helped him clean up his design assets."
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="flex size-8 items-center justify-center rounded-full bg-accent/40 text-xs font-bold text-accent-foreground">
-                  MC
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-foreground">Maya Chen</h4>
-                  <p className="text-[10px] text-muted-foreground">Product designer • Brooklyn, NY</p>
+        {/* Seamless Marquee Slider Loop */}
+        <div className="relative w-full overflow-hidden py-4">
+          <style>{`
+            @keyframes marquee {
+              0% { transform: translateX(0); }
+              100% { transform: translateX(-50%); }
+            }
+            .marquee-inner {
+              display: flex;
+              width: max-content;
+              animation: marquee 45s linear infinite;
+            }
+            .marquee-inner:hover {
+              animation-play-state: paused;
+            }
+          `}</style>
+          
+          <div className="marquee-inner flex gap-6 px-4">
+            {/* Map the testimonials twice to achieve seamless visual looping when moving to -50% */}
+            {[...testimonials, ...testimonials].map((t, idx) => (
+              <div 
+                key={idx} 
+                className="w-[340px] shrink-0 rounded-2xl border border-border bg-card p-6 shadow-2xs flex flex-col justify-between transition-all duration-300 hover:border-primary/20 hover:shadow-xs"
+              >
+                <p className="text-sm text-muted-foreground leading-relaxed italic mb-6">
+                  "{t.quote}"
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="flex size-8 items-center justify-center rounded-full bg-accent/40 text-xs font-bold text-accent-foreground">
+                    {t.initials}
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-foreground">{t.name}</h4>
+                    <p className="text-[10px] text-muted-foreground">{t.role} • {t.location}</p>
+                  </div>
                 </div>
               </div>
-            </div>
-
-            {/* Testimonial 2 */}
-            <div className="group rounded-2xl border border-border bg-card p-6 shadow-xs flex flex-col justify-between transition-all duration-300 hover:border-primary/20 hover:shadow-sm">
-              <p className="text-sm text-muted-foreground leading-relaxed italic mb-6">
-                "Growth marketing was a mystery to me. Through Agora, I found Priya who was writing a copy guide but struggled with dashboard design. I did her layout UI, and she reviewed my SEO configuration. Amazing trade."
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="flex size-8 items-center justify-center rounded-full bg-accent/40 text-xs font-bold text-accent-foreground">
-                  JL
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-foreground">Jordan Lee</h4>
-                  <p className="text-[10px] text-muted-foreground">Frontend engineer • Austin, TX</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Testimonial 3 */}
-            <div className="group rounded-2xl border border-border bg-card p-6 shadow-xs flex flex-col justify-between transition-all duration-300 hover:border-primary/20 hover:shadow-sm">
-              <p className="text-sm text-muted-foreground leading-relaxed italic mb-6">
-                "It is hard to find high-quality learning partnerships without sales pitches. Agora's strict connection requests policy makes it a refreshing, productive space. Just pure value sharing between creators."
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="flex size-8 items-center justify-center rounded-full bg-accent/40 text-xs font-bold text-accent-foreground">
-                  PS
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-foreground">Priya Shah</h4>
-                  <p className="text-[10px] text-muted-foreground">Growth strategist • Toronto, CA</p>
-                </div>
-              </div>
-            </div>
-
+            ))}
           </div>
         </div>
       </section>
