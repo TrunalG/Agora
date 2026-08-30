@@ -483,8 +483,8 @@ export default function LandingPage() {
                 </p>
               </div>
               <div className="mt-8 pt-6 border-t border-border/50 flex gap-4 text-xs font-medium text-muted-foreground">
-                <span className="border border-border/60 rounded-md px-2.5 py-1 bg-background">📍 Country Filters</span>
-                <span className="border border-border/60 rounded-md px-2.5 py-1 bg-background">🎓 Skill Tags</span>
+                <span className="border border-border/60 rounded-md px-2.5 py-1 bg-background">Country Filters</span>
+                <span className="border border-border/60 rounded-md px-2.5 py-1 bg-background">Skill Tags</span>
                 <span className="border border-border/60 rounded-md px-2.5 py-1 bg-background">Match Score</span>
               </div>
             </div>
@@ -530,7 +530,7 @@ export default function LandingPage() {
               <div className="text-3xl font-light text-primary/30 font-mono mb-4">03.</div>
               <h3 className="text-lg font-bold text-foreground mb-2">Start the exchange</h3>
               <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
-                Swap knowledge. Connect in our secure workspace, share screens, review code, or collaborate.
+                Swap knowledge. Connect in our secure inbox to talk, share guidance, and collaborate on your growth goals.
               </p>
             </div>
 
@@ -539,7 +539,7 @@ export default function LandingPage() {
       </section>
 
       {/* Testimonials Section */}
-      <section id="testimonials" className="py-20 bg-muted/20 border-t border-b border-border/80 overflow-hidden">
+      <section id="testimonials" className="py-20 border-t border-b border-border/80 overflow-hidden">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-16">
             <h2 className="text-3xl font-extrabold tracking-tight text-foreground mb-4">
@@ -568,6 +568,10 @@ export default function LandingPage() {
             }
           `}</style>
           
+          {/* Left and Right Fade Gradients */}
+          <div className="absolute left-0 top-0 bottom-0 w-28 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none"></div>
+          <div className="absolute right-0 top-0 bottom-0 w-28 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none"></div>
+
           <div className="marquee-inner flex gap-6 px-4">
             {/* Map the testimonials twice to achieve seamless visual looping when moving to -50% */}
             {[...testimonials, ...testimonials].map((t, idx) => (
