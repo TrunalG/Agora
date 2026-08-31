@@ -495,8 +495,10 @@ export default function AgoraApp() {
     const tempRequest = {
       id: `temp-${targetId}`,
       senderId: me.id,
+      sender: me,
       receiverId: targetId,
       receiver: targetPerson ? { id: targetPerson.id, name: targetPerson.name, username: targetPerson.username, profileImage: targetPerson.image } : { id: targetId },
+      message: '',
       status: 'pending',
       createdAt: new Date().toISOString()
     }
@@ -940,7 +942,7 @@ export default function AgoraApp() {
 
   if (auth === 'guest') {
     return (
-      <div className="min-h-screen flex bg-background text-foreground antialiased selection:bg-primary/20">
+      <div className="min-h-screen flex bg-background text-foreground antialiased select-none selection:bg-primary/20">
         {/* Left column: branding */}
         <div className="hidden lg:flex lg:w-1/2 bg-primary/5 flex-col justify-between p-12 border-r border-border relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-background" />
