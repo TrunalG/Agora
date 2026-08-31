@@ -11,14 +11,6 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'Agora — Learn & Exchange Skills',
   description: 'Trade what you know for what you want to learn with meaningful skill exchanges on Agora.',
-  icons: {
-    icon: [
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-  },
 }
 
 export const viewport: Viewport = {
