@@ -937,7 +937,9 @@ export default function LandingPage() {
           {/* Bottom Zone */}
           <div className="pt-8 border-t border-border/60 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-foreground/70">
             <div className="flex items-center gap-2">
-              <span className="font-bold text-2xl tracking-tight text-primary">Agora</span>
+              <div className="size-7 bg-white rounded-full flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
+                <img src="/bg-logo.jpeg" alt="Agora Logo" className="size-full object-contain" />
+              </div>
               <span>&copy; 2026 Agora Platform. All rights reserved.</span>
             </div>
             <div className="flex gap-6">
