@@ -897,7 +897,7 @@ export default function LandingPage() {
                 href="/app?mode=register"
                 className="inline-flex h-9 items-center justify-center rounded-lg bg-primary px-4 text-xs font-semibold text-primary-foreground hover:bg-primary/95 transition-all shadow-xs cursor-pointer active:scale-[0.98]"
               >
-                Join the Exchange &rarr;
+                Find Your Skill Match &rarr;
               </Link>
             </div>
 
@@ -924,7 +924,7 @@ export default function LandingPage() {
                 <h4 className="text-xs font-bold text-foreground uppercase tracking-wider mb-4">Resources</h4>
                 <ul className="space-y-2 text-xs text-muted-foreground">
                   <li><a href="#how-it-works" className="hover:text-foreground transition-colors">How it Works</a></li>
-                  <li><a href="mailto:support@agora.exchange" className="hover:text-foreground transition-colors">Help & Support</a></li>
+                  {/* <li><a href="mailto:support@agora.exchange" className="hover:text-foreground transition-colors">Help & Support</a></li> */}
                 </ul>
               </div>
             </div>
@@ -939,7 +939,7 @@ export default function LandingPage() {
             <div className="flex gap-6">
               <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
               <Link href="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link>
-              <a href="mailto:support@agora.exchange" className="hover:text-foreground transition-colors">Feedback & Support</a>
+              {/* <a href="mailto:support@agora.exchange" className="hover:text-foreground transition-colors">Feedback & Support</a> */}
             </div>
           </div>
         </div>
