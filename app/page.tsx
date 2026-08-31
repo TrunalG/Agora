@@ -245,8 +245,18 @@ export default function LandingPage() {
 
   const isPerfectMatch = activeMatch.teaches === selectedLearn && activeMatch.learns === selectedTeach
 
-  // Render the landing page immediately to optimize First Contentful Paint (FCP) and Largest Contentful Paint (LCP).
-  // Session check redirects to /app in the background if the user is logged in.
+  if (checkingSession) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
+        <div className="flex flex-col items-center gap-4">
+          <div className="size-16 animate-spin">
+            <img src="/bg-logo2.png" alt="Agora Logo" className="size-full object-contain" />
+          </div>
+          <p className="text-xs text-muted-foreground tracking-wider uppercase font-bold">Loading Agora...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans antialiased select-none">
@@ -519,7 +529,7 @@ export default function LandingPage() {
       {/* How it Works Section */}
       <section id="how-it-works" className="py-24 border-b border-border/40 bg-muted/5 relative overflow-hidden">
         {/* Background Aesthetic Logo Watermark */}
-        <div className="absolute top-[60%] sm:top-1/2 right-0 translate-x-[45%] sm:translate-x-[20%] -translate-y-1/2 w-[500px] sm:w-[650px] h-[500px] sm:h-[650px] opacity-[0.03] pointer-events-none flex items-center justify-center">
+        <div className="absolute top-[60%] sm:top-1/2 right-0 translate-x-[45%] sm:translate-x-[20%] -translate-y-1/2 w-[500px] sm:w-[650px] h-[500px] sm:h-[650px] opacity-[0.08] pointer-events-none flex items-center justify-center">
           <img src="/bg-logo2.png" alt="" className="w-full h-full object-contain mix-blend-multiply" />
         </div>
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 relative z-10">
