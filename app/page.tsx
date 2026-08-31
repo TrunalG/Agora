@@ -249,7 +249,7 @@ export default function LandingPage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
         <div className="flex flex-col items-center gap-4">
-          <div className="size-16 animate-spin">
+          <div className="size-16 animate-spin" style={{ animationDuration: '3s' }}>
             <img src="/bg-logo2.png" alt="Agora Logo" className="size-full object-contain" />
           </div>
           <p className="text-xs text-muted-foreground tracking-wider uppercase font-bold">Loading Agora...</p>
