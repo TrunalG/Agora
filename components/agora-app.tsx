@@ -77,7 +77,7 @@ export default function AgoraApp() {
     setView(newView)
     if (typeof window !== 'undefined') {
       const url = newView === 'Explore' ? '/' : `?view=${newView.toLowerCase()}`
-      window.history.pushState({ view: newView }, '', url)
+      window.history.replaceState({ view: newView }, '', url)
     }
   }
   const [query, setQuery] = useState('')
