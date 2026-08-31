@@ -290,7 +290,7 @@ export default function LandingPage() {
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-8">
             <Link href="/" className="flex items-center gap-2 group">
-              <span className="font-extrabold text-xl tracking-tight text-primary">Agora</span>
+              <span className="font-extrabold text-2xl tracking-tight text-primary">Agora</span>
             </Link>
             <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
               <a href="#features" className="hover:text-foreground transition-colors">Features</a>
@@ -937,7 +937,7 @@ export default function LandingPage() {
           {/* Bottom Zone */}
           <div className="pt-8 border-t border-border/60 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-muted-foreground">
             <div className="flex items-center gap-2">
-              <span className="font-bold text-foreground tracking-tight">Agora</span>
+              <span className="font-extrabold text-2xl tracking-tight text-primary">Agora</span>
               <span>&copy; 2026 Agora Platform. All rights reserved.</span>
             </div>
             <div className="flex gap-6">

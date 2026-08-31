@@ -1412,7 +1412,7 @@ export default function AgoraApp() {
             </button>
             
             <button onClick={() => navigateToView('Explore')} className="flex items-center gap-2 group cursor-pointer">
-              <span className="font-extrabold text-xl tracking-tight text-primary">Agora</span>
+              <span className="font-extrabold text-2xl tracking-tight text-primary">Agora</span>
             </button>
 
             {/* Global Search Bar */}
@@ -1564,7 +1564,7 @@ export default function AgoraApp() {
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm lg:hidden" onClick={() => setMobileMenuOpen(false)}>
             <div className="h-full w-64 bg-card p-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between border-b border-border pb-4 mb-4">
-                <span className="font-bold text-base tracking-tight">Agora</span>
+                <span className="font-extrabold text-2xl tracking-tight text-primary">Agora</span>
                 <button onClick={() => setMobileMenuOpen(false)} className="rounded-lg p-1 text-muted-foreground">
                   <X className="size-5" />
                 </button>
