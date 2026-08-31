@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
-import { Camera, Check, ChevronRight, Link as LinkIcon, MapPin, Pencil, Sparkles, UserRound, Users } from 'lucide-react'
+import { Camera, Check, ChevronRight, Link as LinkIcon, LogOut, MapPin, Pencil, Sparkles, UserRound, Users } from 'lucide-react'
 import { Avatar } from '@/components/Avatar'
 import { Chip } from '@/components/Chip'
 import { Modal } from '@/components/Modal'
@@ -244,6 +244,16 @@ export function ProfileView({
                     className="flex items-center gap-1 font-semibold text-primary hover:underline cursor-pointer"
                   >
                     <Users className="size-3.5" /> {connectionsCount} followers
+                  </button>
+                </div>
+
+                {/* Sign Out on Mobile */}
+                <div className="pt-1 md:hidden">
+                  <button
+                    onClick={onLogout}
+                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-destructive bg-destructive/5 text-destructive hover:bg-destructive/10 text-xs font-bold transition-colors cursor-pointer"
+                  >
+                    <LogOut className="size-3.5" /> Sign out
                   </button>
                 </div>
               </div>

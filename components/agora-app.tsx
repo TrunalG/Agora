@@ -1741,44 +1741,35 @@ export default function AgoraApp() {
               <section className="lg:col-span-3 space-y-4">
                 
                 {/* Mobile Filter Tabs (Visible only on mobile/tablet) */}
-                <div className="lg:hidden bg-card rounded-xl border border-border p-3 flex flex-col gap-3 shadow-xs mb-4">
-                  <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-                    {[
-                      { key: 'all', label: 'All Members' },
-                      { key: 'match', label: 'Recommended Matches' },
-                      { key: 'teach', label: 'Available to Teach' },
-                      { key: 'learn', label: 'Looking to Learn' },
-                    ].map((tab) => (
-                      <button
-                        key={tab.key}
-                        onClick={() => {
-                          setFilter(tab.key as any)
-                          if (tab.key === 'all') {
-                            setQuery('')
-                            setSearchVal('')
-                          }
-                        }}
-                        className={`rounded-full px-4 py-1.5 text-xs font-semibold whitespace-nowrap border transition-all ${
-                          filter === tab.key
-                            ? 'bg-primary text-primary-foreground border-primary font-bold'
-                            : 'border-border text-muted-foreground hover:bg-muted/40'
-                        }`}
-                      >
-                        {tab.label}
-                      </button>
-                    ))}
-                  </div>
-                  
-                  <div className="flex items-center justify-between gap-3 border-t border-border pt-2 text-xs">
-                    <span className="font-semibold text-[10px] text-muted-foreground uppercase flex items-center gap-1">
-                      <MapPin className="size-3 text-primary" /> Location
-                    </span>
+                <div className="lg:hidden bg-card rounded-xl border border-border p-3 shadow-xs mb-4">
+                  <div className="flex gap-2 w-full">
+                    {/* Filter Dropdown */}
                     <CustomSelect
-                      value={country}
-                      onChange={setCountry}
-                      options={countries}
-                      placeholder="Select country"
-                      className="w-36"
+                      value={filter}
+                      onChange={(val) => {
+                        setFilter((val || 'all') as any)
+                        if (val === 'all' || !val) {
+                          setQuery('')
+                          setSearchVal('')
+                        }
+                      }}
+                      options={[
+                        { value: 'all', label: 'All Members' },
+                        { value: 'match', label: 'Recommended Matches' },
+                        { value: 'teach', label: 'Available to Teach' },
+                        { value: 'learn', label: 'Looking to Learn' },
+                      ]}
+                      placeholder="All Members"
+                      className="w-1/2"
+                    />
+
+                    {/* Location Dropdown */}
+                    <CustomSelect
+                      value={country === 'Anywhere' ? '' : country}
+                      onChange={(val) => setCountry(val || 'Anywhere')}
+                      options={countries.filter((c) => c !== 'Anywhere')}
+                      placeholder="Location"
+                      className="w-1/2"
                     />
                   </div>
                 </div>
