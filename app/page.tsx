@@ -126,9 +126,9 @@ export default function LandingPage() {
   const [checkingSession, setCheckingSession] = useState(true)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  // Interactive Sandbox state
-  const [selectedLearn, setSelectedLearn] = useState('React')
-  const [selectedTeach, setSelectedTeach] = useState('Design Systems')
+  // Interactive Sandbox state (initialized to Figma & Marketing, will auto-play to React & Design Systems on load)
+  const [selectedLearn, setSelectedLearn] = useState('Figma')
+  const [selectedTeach, setSelectedTeach] = useState('Marketing')
 
   // Timeline Scroll Tracking State
   const [scrollProgress, setScrollProgress] = useState(0)
@@ -207,6 +207,24 @@ export default function LandingPage() {
     }
   }, [checkingSession])
 
+  useEffect(() => {
+    if (checkingSession) return
+
+    // Autoplay demonstration of the simulator's interactivity after visual reveals
+    const timer1 = setTimeout(() => {
+      setSelectedLearn('React')
+    }, 2400) // Trigger after stickers are mostly shown
+
+    const timer2 = setTimeout(() => {
+      setSelectedTeach('Design Systems')
+    }, 3600)
+
+    return () => {
+      clearTimeout(timer1)
+      clearTimeout(timer2)
+    }
+  }, [checkingSession])
+
   // Resolve matching simulator user
   let activeMatch = simulatorData.find(u => u.teaches === selectedLearn && u.learns === selectedTeach)
   if (!activeMatch) {
@@ -250,6 +268,15 @@ export default function LandingPage() {
         }
         .delay-300 {
           transition-delay: 300ms;
+        }
+        .delay-700 {
+          transition-delay: 700ms;
+        }
+        .delay-1200 {
+          transition-delay: 1200ms;
+        }
+        .delay-1700 {
+          transition-delay: 1700ms;
         }
       `}</style>
       {/* Header Navigation */}
@@ -362,39 +389,39 @@ export default function LandingPage() {
             </div>
 
             {/* Interactive Exchange Sandbox */}
-            <div className="mt-16 lg:mt-0 lg:col-span-6 flex justify-center relative reveal-on-scroll delay-300">
+            <div className="mt-16 lg:mt-0 lg:col-span-6 flex justify-center relative">
 
               {/* Sticker 1: Define what you learn (Top Left) */}
-              <div className="absolute top-10 -left-28 hidden xl:flex flex-col gap-0.5 rounded-lg border border-border/80 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs -rotate-2 select-none z-20">
+              <div className="absolute top-10 -left-28 hidden xl:flex flex-col gap-0.5 rounded-lg border border-border/80 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs -rotate-2 select-none z-20 reveal-on-scroll delay-700">
                 <span>Define what you learn</span>
                 <span className="text-[10px] text-muted-foreground font-normal">Select skills you need to master</span>
               </div>
-              <svg className="absolute top-16 -left-12 w-28 h-20 hidden xl:block text-muted-foreground/30 z-20" viewBox="0 0 110 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg className="absolute top-16 -left-12 w-28 h-20 hidden xl:block text-muted-foreground/30 z-20 reveal-on-scroll delay-700" viewBox="0 0 110 80" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M 15,10 C 10,30 40,65 90,50" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="4 4" />
                 <path d="M 80,42 L 90,50 L 80,58" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
 
               {/* Sticker 2: Offer what you teach (Right Side) */}
-              <div className="absolute top-[26%] -right-20 -translate-y-1/2 hidden xl:flex flex-col gap-0.5 rounded-lg border border-border/80 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs rotate-2 select-none z-20">
+              <div className="absolute top-[26%] -right-20 -translate-y-1/2 hidden xl:flex flex-col gap-0.5 rounded-lg border border-border/80 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs rotate-2 select-none z-20 reveal-on-scroll delay-1200">
                 <span>Offer what you teach</span>
                 <span className="text-[10px] text-muted-foreground font-normal">List expertise you can share</span>
               </div>
-              <svg className="absolute top-[28%] -right-6 w-24 h-24 hidden xl:block text-muted-foreground/30 z-20" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg className="absolute top-[28%] -right-6 w-24 h-24 hidden xl:block text-muted-foreground/30 z-20 reveal-on-scroll delay-1200" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M 80,10 C 85,35 65,70 15,60" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="4 4" />
                 <path d="M 25,52 L 15,60 L 23,70" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
 
               {/* Sticker 3: Match and swap! (Bottom Left) */}
-              <div className="absolute top-[64%] -left-28 -translate-y-1/2 hidden xl:flex flex-col gap-0.5 rounded-lg border border-border/80 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs -rotate-2 select-none z-20">
+              <div className="absolute top-[64%] -left-28 -translate-y-1/2 hidden xl:flex flex-col gap-0.5 rounded-lg border border-border/80 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs -rotate-2 select-none z-20 reveal-on-scroll delay-1700">
                 <span>See your matches</span>
                 <span className="text-[10px] text-muted-foreground font-normal">Review peer profiles and connect</span>
               </div>
-              <svg className="absolute top-[66%] -left-8 w-28 h-28 hidden xl:block text-muted-foreground/30 z-20" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg className="absolute top-[66%] -left-8 w-28 h-28 hidden xl:block text-muted-foreground/30 z-20 reveal-on-scroll delay-1700" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M 15,15 C 10,40 40,90 90,75" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="4 4" />
                 <path d="M 80,67 L 90,75 L 80,83" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
 
-              <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-sm hover:shadow-md transition-all duration-300 z-10 relative">
+              <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-sm hover:shadow-md transition-all duration-300 z-10 relative reveal-on-scroll delay-150">
                 <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/50">
                   <span className="text-[9px] font-mono tracking-widest text-muted-foreground font-bold uppercase">00 // MATCH SIMULATOR</span>
                   <span className="inline-flex size-2 rounded-full bg-emerald-500 animate-pulse"></span>
