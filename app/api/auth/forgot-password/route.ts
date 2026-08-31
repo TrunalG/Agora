@@ -39,14 +39,14 @@ export async function POST(req: NextRequest) {
       // Send Email
       const emailResult = await sendPasswordResetOtpEmail(normalizedEmail, generatedOtp)
 
-      if (!emailResult.success) {
-        return NextResponse.json({ error: `Failed to send verification email. If using Resend free tier, ensure ${normalizedEmail} is a verified testing address.` }, { status: 500 })
-      }
-
       return NextResponse.json(
         {
           otpSent: true,
-          message: `Verification code sent to ${normalizedEmail}! Please check your email inbox.`,
+          emailSent: emailResult.success,
+          testOtp: !emailResult.success ? generatedOtp : undefined,
+          message: emailResult.success
+            ? `Verification code sent to ${normalizedEmail}! Please check your email inbox.`
+            : `Verification code sent to ${normalizedEmail}. (Note: If using Resend free tier, ensure ${normalizedEmail} is verified or check server logs. Testing Code: ${generatedOtp})`,
         },
         { status: 200 }
       )

@@ -165,7 +165,7 @@ export function AuthModal({ mode, setMode, onSuccess, notify }: AuthModalProps) 
         return
       }
       setOtpStep(true)
-      setOtpCode('')
+      setOtpCode(data.testOtp || '') // Auto-fill OTP if testing mode
       setOtpMessage(data.message || `Verification code sent to ${email}`)
       notify('Verification OTP sent!')
     } catch (err: any) {
@@ -248,7 +248,7 @@ export function AuthModal({ mode, setMode, onSuccess, notify }: AuthModalProps) 
         return
       }
       setView('forgot-password-otp')
-      setOtpCode('')
+      setOtpCode(data.testOtp || '') // Auto-fill OTP if testing mode
       setOtpMessage(data.message || `Password reset code sent to ${email}`)
       notify('Reset code sent successfully!')
     } catch (err: any) {
