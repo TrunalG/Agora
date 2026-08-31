@@ -772,6 +772,10 @@ export default function LandingPage() {
       <section className="py-20 reveal-on-scroll">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="relative overflow-hidden rounded-3xl border border-border bg-muted/30 p-12 sm:p-20 text-center shadow-xs transition-all duration-300 hover:border-primary/20">
+            {/* Background Aesthetic Logo Watermark */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] sm:w-[800px] h-[600px] sm:h-[800px] opacity-[0.04] pointer-events-none flex items-center justify-center -rotate-[15deg]">
+              <img src="/logo.png" alt="" className="w-full h-full object-contain drop-shadow-2xl" />
+            </div>
             <style>{`
               @keyframes float-gentle {
                 0%, 100% { transform: translateY(0px) rotate(var(--rot-deg, 0deg)); }
