@@ -210,16 +210,31 @@ export default function LandingPage() {
   useEffect(() => {
     if (checkingSession) return
 
-    // Autoplay demonstration of the simulator's interactivity after visual reveals
-    const timer1 = setTimeout(() => {
-      setSelectedLearn('React')
-    }, 2400) // Trigger after stickers are mostly shown
+    let timer1: NodeJS.Timeout
+    let timer2: NodeJS.Timeout
 
-    const timer2 = setTimeout(() => {
-      setSelectedTeach('Design Systems')
-    }, 3600)
+    const autoplayObserver = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        autoplayObserver.disconnect() // Only run once
+
+        // Autoplay demonstration of the simulator's interactivity after visual reveals
+        timer1 = setTimeout(() => {
+          setSelectedLearn('React')
+        }, 2400) // Trigger after stickers are mostly shown
+
+        timer2 = setTimeout(() => {
+          setSelectedTeach('Design Systems')
+        }, 3600)
+      }
+    }, { threshold: 0.3 })
+
+    const card = document.getElementById('match-simulator-card')
+    if (card) {
+      autoplayObserver.observe(card)
+    }
 
     return () => {
+      autoplayObserver.disconnect()
       clearTimeout(timer1)
       clearTimeout(timer2)
     }
@@ -380,7 +395,7 @@ export default function LandingPage() {
             </div>
 
             {/* Interactive Exchange Sandbox */}
-            <div className="mt-16 lg:mt-0 lg:col-span-6 flex justify-center relative">
+            <div className="mt-16 lg:mt-0 lg:col-span-6 flex justify-center relative" id="match-simulator-card">
 
               {/* Sticker 1: Define what you learn (Top Left) */}
               <div className="absolute top-10 -left-28 hidden xl:flex flex-col gap-0.5 rounded-lg border border-border/80 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs -rotate-2 select-none z-20 reveal-on-scroll delay-700">
