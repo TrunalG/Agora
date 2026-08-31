@@ -31,7 +31,7 @@ interface ProfileViewProps {
   setView: (v: 'Explore' | 'Network' | 'Messages' | 'Notifications' | 'Profile' | 'Settings') => void
   onSave: (d: any) => void
   onLogout: () => void
-  onViewMember?: (id: string) => void
+  onViewMember?: (id: string, fallbackData?: any) => void
 }
 
 export function ProfileView({
@@ -613,7 +613,7 @@ export function ProfileView({
                     <button
                       onClick={() => {
                         setIsFollowersModalOpen(false)
-                        onViewMember?.(conn.partnerId)
+                        onViewMember?.(conn.partnerId, conn.partner)
                       }}
                       className="flex items-center gap-3 text-left hover:opacity-80 transition-opacity"
                     >

@@ -195,19 +195,26 @@ export async function DELETE(req: NextRequest) {
       const targetUser = await findUserByIdOrSlug(receiverId)
       if (targetUser) {
         request = await ConnectionRequest.findOne({
-          senderId: auth.userId,
-          receiverId: targetUser._id,
-          status: 'pending',
+          $or: [
+            { senderId: auth.userId, receiverId: targetUser._id },
+            { senderId: targetUser._id, receiverId: auth.userId },
+          ],
         })
       }
     }
 
     if (!request) {
-      return NextResponse.json({ error: 'Pending connection request not found' }, { status: 404 })
+      return NextResponse.json({ error: 'Connection request not found' }, { status: 404 })
     }
 
-    if (request.senderId.toString() !== auth.userId) {
-      return NextResponse.json({ error: 'Only the sender can withdraw this request' }, { status: 403 })
+    if (request.status === 'pending') {
+      if (request.senderId.toString() !== auth.userId) {
+        return NextResponse.json({ error: 'Only the sender can withdraw this request' }, { status: 403 })
+      }
+    } else {
+      if (request.senderId.toString() !== auth.userId && request.receiverId.toString() !== auth.userId) {
+        return NextResponse.json({ error: 'Only participants can remove this connection' }, { status: 403 })
+      }
     }
 
     const reqId = request._id.toString()

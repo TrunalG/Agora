@@ -27,6 +27,7 @@ import {
   Ban,
   Eye,
   EyeOff,
+  Link2,
 } from 'lucide-react'
 import {
   calculateMatch,
@@ -84,7 +85,7 @@ export default function AgoraApp() {
   const [searchVal, setSearchVal] = useState('')
   const [searchChatQuery, setSearchChatQuery] = useState('')
   const [filter, setFilter] = useState<'all' | 'teach' | 'learn' | 'match'>('all')
-  const [networkTab, setNetworkTab] = useState<'received' | 'sent' | 'following'>('received')
+  const [networkTab, setNetworkTab] = useState<'received' | 'sent' | 'connections'>('received')
   const [country, setCountry] = useState('Anywhere')
   const [profile, setProfile] = useState<Person | null>(null)
   const [auth, setAuth] = useState<'guest' | 'logged'>('guest')
@@ -371,6 +372,20 @@ export default function AgoraApp() {
         if (res.ok) {
           const data = await res.json()
           setDrawerChatHistory(data.messages || [])
+
+          const hasUnread = data.messages?.some((msg: any) => msg.senderId !== me.id && !msg.readAt)
+          if (hasUnread) {
+            await fetch('/api/messages', {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ conversationId: drawerActiveChat }),
+            })
+            const convRes = await fetch('/api/conversations')
+            if (convRes.ok) {
+              const convData = await convRes.json()
+              setConversationsList(convData.conversations || [])
+            }
+          }
         }
       } catch {
         // ignore
@@ -381,7 +396,7 @@ export default function AgoraApp() {
       const interval = setInterval(loadDrawerChatMessages, 4000)
       return () => clearInterval(interval)
     }
-  }, [drawerActiveChat])
+  }, [drawerActiveChat, me.id])
 
   useEffect(() => {
     async function loadChatMessages() {
@@ -391,13 +406,31 @@ export default function AgoraApp() {
         if (res.ok) {
           const data = await res.json()
           setChatHistory(data.messages || [])
+
+          const hasUnread = data.messages?.some((msg: any) => msg.senderId !== me.id && !msg.readAt)
+          if (hasUnread) {
+            await fetch('/api/messages', {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ conversationId: activeChat }),
+            })
+            const convRes = await fetch('/api/conversations')
+            if (convRes.ok) {
+              const convData = await convRes.json()
+              setConversationsList(convData.conversations || [])
+            }
+          }
         }
       } catch {
         // ignore
       }
     }
     loadChatMessages()
-  }, [activeChat])
+    if (activeChat) {
+      const interval = setInterval(loadChatMessages, 4000)
+      return () => clearInterval(interval)
+    }
+  }, [activeChat, me.id])
 
   useEffect(() => {
     if (activeChat) {
@@ -615,6 +648,56 @@ export default function AgoraApp() {
         })
       }
       notify('Network error')
+    }
+  }
+
+  async function openProfileCard(idOrUsername: string, fallbackData?: any) {
+    if (!idOrUsername) return
+    const fallback = fallbackData || {}
+    const isId = idOrUsername.length === 24 || idOrUsername.length === 12
+    const initialPerson: Person = {
+      id: fallback.id || fallback._id || idOrUsername,
+      name: fallback.name || fallback.username || 'Loading...',
+      username: fallback.username || '',
+      role: fallback.role || (fallback.skillsToTeach?.[0] ? `${fallback.skillsToTeach[0]} Mentor` : fallback.bio ? (fallback.bio.length > 30 ? fallback.bio.slice(0, 30) + '...' : fallback.bio) : 'Member'),
+      location: fallback.location || fallback.country || 'Anywhere',
+      initials: fallback.initials || (fallback.name || fallback.username || 'U').slice(0, 2).toUpperCase(),
+      tone: fallback.tone || 'bg-accent text-accent-foreground',
+      teaches: fallback.teaches || fallback.skillsToTeach || [],
+      learns: fallback.learns || fallback.skillsToLearn || [],
+      about: fallback.about || fallback.bio || 'Fetching profile details...',
+      image: fallback.image || fallback.profileImage || '',
+      links: fallback.links || [],
+      connectionsCount: fallback.connectionsCount || 0,
+    }
+    setProfile(initialPerson)
+
+    try {
+      const queryParam = isId ? `id=${idOrUsername}` : `username=${encodeURIComponent(idOrUsername)}`
+      const res = await fetch(`/api/user/profile?${queryParam}`)
+      if (res.ok) {
+        const data = await res.json()
+        if (data.profile) {
+          const p = data.profile
+          setProfile({
+            id: p.id,
+            name: p.name || p.username,
+            username: p.username,
+            role: p.bio ? (p.bio.length > 30 ? p.bio.slice(0, 30) + '...' : p.bio) : 'Member',
+            location: p.country || 'Anywhere',
+            initials: (p.name || p.username || 'U').slice(0, 2).toUpperCase(),
+            tone: 'bg-accent text-accent-foreground',
+            teaches: p.skillsToTeach || [],
+            learns: p.skillsToLearn || [],
+            about: p.about || p.bio || 'No bio provided.',
+            image: p.profileImage || '',
+            links: p.links || [],
+            connectionsCount: p.connectionsCount || 0,
+          })
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching latest user profile:', error)
     }
   }
 
@@ -1725,7 +1808,7 @@ export default function AgoraApp() {
 
                         <div className="space-y-3">
                           {/* Member Main Metadata Header */}
-                           <button onClick={() => setProfile(person)} className="flex items-start gap-3.5 text-left w-full cursor-pointer">
+                           <button onClick={() => openProfileCard(person.id, person)} className="flex items-start gap-3.5 text-left w-full cursor-pointer">
                             <Avatar person={person} large />
                             <div className="space-y-0.5">
                               <h3 className="font-bold text-xs text-foreground group-hover:text-primary hover:underline transition-colors">{person.name}</h3>
@@ -1847,6 +1930,7 @@ export default function AgoraApp() {
                     {[
                       { key: 'received', label: 'Received Requests', count: incomingRequests.filter((req) => !rejectedRequests.has(req.id) && !blockedUserIds.has(req.senderId)).length },
                       { key: 'sent', label: 'Sent Requests', count: outgoingRequests.filter((req) => !blockedUserIds.has(req.receiverId)).length },
+                      { key: 'connections', label: 'Connections', count: filteredConnectionsCount },
                     ].map((tab) => (
                       <button
                         key={tab.key}
@@ -1877,7 +1961,7 @@ export default function AgoraApp() {
                             const isAccepted = acceptedRequests.has(req.id)
                             return (
                               <div key={req.id} className="flex items-center justify-between rounded-xl border border-border p-4 shadow-2xs">
-                                <button onClick={() => setProfile(req.sender)} className="flex items-center gap-3 text-left">
+                                <button onClick={() => openProfileCard(req.senderId, req.sender)} className="flex items-center gap-3 text-left">
                                   <Avatar person={{ name: req.sender?.name, username: req.sender?.username, image: req.sender?.profileImage }} />
                                   <div>
                                     <p className="text-xs font-bold text-foreground hover:underline">
@@ -1933,7 +2017,7 @@ export default function AgoraApp() {
                           .filter((req) => !blockedUserIds.has(req.receiverId))
                           .map((req) => (
                           <div key={req.id} className="flex items-center justify-between rounded-xl border border-border p-4 shadow-2xs">
-                            <button onClick={() => setProfile(req.receiver)} className="flex items-center gap-3 text-left">
+                            <button onClick={() => openProfileCard(req.receiverId, req.receiver)} className="flex items-center gap-3 text-left">
                               <Avatar person={{ name: req.receiver?.name, username: req.receiver?.username, image: req.receiver?.profileImage }} />
                               <div>
                                 <p className="text-xs font-bold text-foreground hover:underline">
@@ -1955,6 +2039,62 @@ export default function AgoraApp() {
                         {outgoingRequests.filter((req) => !blockedUserIds.has(req.receiverId)).length === 0 && (
                           <div className="text-center py-8 text-xs text-muted-foreground">
                             No sent follow requests.
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {networkTab === 'connections' && (
+                      <div className="space-y-3">
+                        {filteredConnections.map((conn) => (
+                          <div key={conn.connectionId} className="flex items-center justify-between rounded-xl border border-border p-4 shadow-2xs">
+                            <button onClick={() => openProfileCard(conn.partnerId, conn.partner)} className="flex items-center gap-3 text-left">
+                              <Avatar person={{ name: conn.partner?.name, username: conn.partner?.username, image: conn.partner?.profileImage }} />
+                              <div>
+                                <p className="text-xs font-bold text-foreground hover:underline">
+                                  {conn.partner?.name || conn.partner?.username}
+                                </p>
+                                <p className="text-[10px] text-muted-foreground mt-0.5">
+                                  @{conn.partner?.username} · {conn.partner?.country || 'Global'}
+                                </p>
+                              </div>
+                            </button>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => startConversation(conn.partnerId)}
+                                className="rounded-lg bg-primary px-3.5 py-1.5 text-xs font-bold text-primary-foreground hover:opacity-90 transition-opacity cursor-pointer"
+                              >
+                                Message
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  if (window.confirm(`Are you sure you want to remove connection with ${conn.partner?.name || conn.partner?.username}?`)) {
+                                    try {
+                                      const res = await fetch(`/api/connections/request?receiverId=${conn.partnerId}`, {
+                                        method: 'DELETE',
+                                      })
+                                      if (res.ok) {
+                                        notify('Connection removed')
+                                        loadUserData(true)
+                                      } else {
+                                        const d = await res.json()
+                                        notify(d.error || 'Failed to remove connection')
+                                      }
+                                    } catch {
+                                      notify('Network error')
+                                    }
+                                  }
+                                }}
+                                className="rounded-lg border border-border px-3.5 py-1.5 text-xs font-semibold hover:bg-muted text-foreground transition-colors cursor-pointer"
+                              >
+                                Disconnect
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                        {filteredConnectionsCount === 0 && (
+                          <div className="text-center py-8 text-xs text-muted-foreground">
+                            No connections yet.
                           </div>
                         )}
                       </div>
@@ -2049,19 +2189,7 @@ export default function AgoraApp() {
                               <button
                                 onClick={() => {
                                   if (partner) {
-                                    setActivePartnerModal({
-                                      id: partner.id,
-                                      name: partner.name || partner.username,
-                                      username: partner.username,
-                                      role: 'Agora Member',
-                                      location: partner.country || 'Anywhere',
-                                      initials: (partner.name || partner.username || 'U').slice(0, 2).toUpperCase(),
-                                      tone: 'bg-primary text-primary-foreground',
-                                      teaches: partner.skillsToTeach || [],
-                                      learns: partner.skillsToLearn || [],
-                                      about: partner.bio || '',
-                                      image: partner.profileImage || '',
-                                    })
+                                    openProfileCard(partner.id || partner._id, partner)
                                   }
                                 }}
                                 className="flex items-center gap-3 text-left hover:opacity-85 transition-opacity"
@@ -2195,22 +2323,7 @@ export default function AgoraApp() {
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    const triggerPerson = {
-                                      id: triggerUser.id || triggerUser._id,
-                                      name: triggerUser.name || triggerUser.username,
-                                      username: triggerUser.username,
-                                      role: triggerUser.role || (triggerUser.skillsToTeach?.[0] ? `${triggerUser.skillsToTeach[0]} Mentor` : 'Member'),
-                                      location: triggerUser.location || triggerUser.country || 'Anywhere',
-                                      initials: triggerUser.initials || (triggerUser.name || triggerUser.username || 'U').slice(0, 2).toUpperCase(),
-                                      tone: 'bg-accent text-accent-foreground',
-                                      teaches: triggerUser.teaches || triggerUser.skillsToTeach || [],
-                                      learns: triggerUser.learns || triggerUser.skillsToLearn || [],
-                                      about: triggerUser.about || triggerUser.bio || '',
-                                      image: triggerUser.image || triggerUser.profileImage || '',
-                                      links: triggerUser.links || [],
-                                      connectionsCount: triggerUser.connectionsCount || 0,
-                                    }
-                                    setProfile(triggerPerson)
+                                    openProfileCard(triggerUser.id || triggerUser._id, triggerUser)
                                   }}
                                   className="flex items-center gap-3.5 text-left hover:underline group cursor-pointer"
                                 >
@@ -2328,38 +2441,8 @@ export default function AgoraApp() {
               setView={navigateToView}
               onSave={saveProfile}
               onLogout={handleLogout}
-              onViewMember={async (id) => {
-                const found = peopleList.find((p) => p.id === id || p.username === id)
-                if (found) {
-                  setProfile(found)
-                } else {
-                  try {
-                    const res = await fetch(`/api/users?q=${id}`)
-                    if (res.ok) {
-                      const data = await res.json()
-                      const matched = (data.people || data.users)?.find((u: any) => u.username === id || u.id === id || u._id === id)
-                      if (matched) {
-                        setProfile({
-                          id: matched.id || matched._id,
-                          name: matched.name || matched.username,
-                          username: matched.username,
-                          role: matched.role || (matched.skillsToTeach?.[0] ? `${matched.skillsToTeach[0]} Mentor` : 'Member'),
-                          location: matched.location || matched.country || 'Anywhere',
-                          initials: matched.initials || (matched.name || matched.username || 'U').slice(0, 2).toUpperCase(),
-                          tone: 'bg-accent text-accent-foreground',
-                          teaches: matched.teaches || matched.skillsToTeach || [],
-                          learns: matched.learns || matched.skillsToLearn || [],
-                          about: matched.about || matched.bio || '',
-                          image: matched.image || matched.profileImage || '',
-                          links: matched.links || [],
-                          connectionsCount: matched.connectionsCount || 0,
-                        })
-                      }
-                    }
-                  } catch (e) {
-                    console.error(e)
-                  }
-                }
+              onViewMember={(id, fallback) => {
+                openProfileCard(id, fallback)
               }}
             />
           )}
@@ -2570,6 +2653,26 @@ export default function AgoraApp() {
                     </div>
                   </div>
                 </div>
+
+                {target.links && target.links.length > 0 && (
+                  <div className="space-y-2 border-t border-border pt-4">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">Portfolio & Links</span>
+                    <div className="flex flex-wrap gap-2.5">
+                      {target.links.map((link, idx) => (
+                        <a
+                          key={idx}
+                          href={link.startsWith('http://') || link.startsWith('https://') ? link : `https://${link}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1.5 text-xs text-primary font-semibold hover:underline"
+                        >
+                          <Link2 className="size-3.5 text-muted-foreground" />
+                          <span className="truncate max-w-[180px]">{link}</span>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <div className="mt-4 flex gap-2 border-t border-border pt-4">
                   {isConnected ? (

@@ -82,6 +82,7 @@ export async function POST(req: NextRequest) {
         {
           otpSent: true,
           emailSent: emailResult.success,
+          testOtp: !emailResult.success ? generatedOtp : undefined,
           message: emailResult.success
             ? `Verification code sent to ${normalizedEmail}! Please check your email inbox.`
             : `Verification code sent to ${normalizedEmail}. (Note: If using Resend free tier, ensure ${normalizedEmail} is verified or check server logs. Testing Code: ${generatedOtp})`,
