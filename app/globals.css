@@ -160,11 +160,16 @@
   body {
     @apply bg-background text-foreground;
   }
-  button,
-  a,
+  button, 
+  a, 
+  select,
   [role="button"],
-  [role="menuitem"],
-  [role="tab"] {
-    cursor: pointer;
+  input[type="button"],
+  input[type="submit"] {
+    cursor: pointer !important;
+  }
+  button:disabled,
+  input:disabled {
+    cursor: not-allowed !important;
   }
 }
