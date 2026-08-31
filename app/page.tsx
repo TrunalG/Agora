@@ -665,21 +665,21 @@ export default function LandingPage() {
       )}
 
       {/* Bento Grid Features Section */}
-      <section id="features" className="py-20 bg-muted/20 border-t border-b border-border/80 reveal-on-scroll">
+      <section id="features" className="py-20 bg-muted/20 border-t border-b border-border/80">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-xl mx-auto mb-16">
             <h2 className="text-3xl font-extrabold tracking-tight text-foreground mb-4">
-              Built for direct collaboration
+              Exchange knowledge, build your network
             </h2>
             <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
-              No points, tokens, or subscriptions. Agora matches builders for direct, reciprocal knowledge sharing.
+              Discover matching peers, communicate directly in a secure workspace, and collaborate to master new skills together.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
             {/* Feature 1 (Col-span 2) */}
-            <div className="group md:col-span-2 rounded-2xl border border-border bg-card p-8 flex flex-col justify-between shadow-xs transition-all duration-300 hover:border-primary/30 hover:shadow-sm hover:-translate-y-0.5">
+            <div className="group md:col-span-2 rounded-2xl border border-border bg-card p-8 flex flex-col justify-between shadow-xs transition-all duration-300 hover:border-primary/30 hover:shadow-sm hover:-translate-y-0.5 reveal-on-scroll delay-150">
               <div>
                 <div className="flex items-center justify-between mb-5">
                   <span className="text-[9px] font-mono tracking-widest font-bold text-muted-foreground uppercase border border-border bg-muted/40 px-2 py-0.5 rounded">01 // AUTOMATED MATCHING</span>
@@ -706,7 +706,7 @@ export default function LandingPage() {
             </div>
 
             {/* Feature 2 (Col-span 1) */}
-            <div className="group rounded-2xl border border-border bg-card p-8 flex flex-col justify-between shadow-xs transition-all duration-300 hover:border-primary/30 hover:shadow-sm hover:-translate-y-0.5">
+            <div className="group rounded-2xl border border-border bg-card p-8 flex flex-col justify-between shadow-xs transition-all duration-300 hover:border-primary/30 hover:shadow-sm hover:-translate-y-0.5 reveal-on-scroll delay-300">
               <div>
                 <div className="flex items-center justify-between mb-5">
                   <span className="text-[9px] font-mono tracking-widest font-bold text-muted-foreground uppercase border border-border bg-muted/40 px-2 py-0.5 rounded">02 // INBOX ISOLATION</span>
@@ -723,7 +723,7 @@ export default function LandingPage() {
             </div>
 
             {/* Feature 3 (Col-span 1) */}
-            <div className="group rounded-2xl border border-border bg-card p-8 flex flex-col justify-between shadow-xs transition-all duration-300 hover:border-primary/30 hover:shadow-sm hover:-translate-y-0.5">
+            <div className="group rounded-2xl border border-border bg-card p-8 flex flex-col justify-between shadow-xs transition-all duration-300 hover:border-primary/30 hover:shadow-sm hover:-translate-y-0.5 reveal-on-scroll delay-700">
               <div>
                 <div className="flex items-center justify-between mb-5">
                   <span className="text-[9px] font-mono tracking-widest font-bold text-muted-foreground uppercase border border-border bg-muted/40 px-2 py-0.5 rounded">03 // TRUST PROTOCOLS</span>
@@ -740,7 +740,7 @@ export default function LandingPage() {
             </div>
 
             {/* Feature 4 (Col-span 2) */}
-            <div className="group md:col-span-2 rounded-2xl border border-border bg-card p-8 flex flex-col justify-between shadow-xs transition-all duration-300 hover:border-primary/30 hover:shadow-sm hover:-translate-y-0.5">
+            <div className="group md:col-span-2 rounded-2xl border border-border bg-card p-8 flex flex-col justify-between shadow-xs transition-all duration-300 hover:border-primary/30 hover:shadow-sm hover:-translate-y-0.5 reveal-on-scroll delay-1200">
               <div>
                 <div className="flex items-center justify-between mb-5">
                   <span className="text-[9px] font-mono tracking-widest font-bold text-muted-foreground uppercase border border-border bg-muted/40 px-2 py-0.5 rounded">04 // ADVANCED DISCOVERY</span>
