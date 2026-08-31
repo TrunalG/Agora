@@ -160,4 +160,11 @@
   body {
     @apply bg-background text-foreground;
   }
+  button,
+  a,
+  [role="button"],
+  [role="menuitem"],
+  [role="tab"] {
+    cursor: pointer;
+  }
 }
