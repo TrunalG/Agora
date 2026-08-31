@@ -1645,26 +1645,80 @@ export default function AgoraApp() {
         {/* Mobile Navigation Menu Drawer */}
         {mobileMenuOpen && (
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm lg:hidden" onClick={() => setMobileMenuOpen(false)}>
-            <div className="h-full w-64 bg-card p-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-center justify-between border-b border-border pb-4 mb-4">
-                <span className="font-bold text-2xl tracking-tight text-primary">Agora</span>
-                <button onClick={() => setMobileMenuOpen(false)} className="rounded-lg p-1 text-muted-foreground">
-                  <X className="size-5" />
-                </button>
+            <div className="h-full w-64 bg-card p-4 shadow-xl flex flex-col justify-between" onClick={(e) => e.stopPropagation()}>
+              <div>
+                <div className="flex items-center justify-between border-b border-border pb-4 mb-4">
+                  <span className="font-bold text-2xl tracking-tight text-primary">Agora</span>
+                  <button onClick={() => setMobileMenuOpen(false)} className="rounded-lg p-1 text-muted-foreground">
+                    <X className="size-5" />
+                  </button>
+                </div>
+                <div className="flex flex-col gap-1">
+                  {['Explore', 'Network', 'Messages', 'Notifications'].map((item) => (
+                    <button
+                      key={item}
+                      onClick={() => {
+                        navigateToView(item as View)
+                        setMobileMenuOpen(false)
+                      }}
+                      className={`rounded-lg px-4 py-3 text-left text-xs font-bold ${view === item ? 'bg-primary/5 text-primary' : 'hover:bg-muted'}`}
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div className="flex flex-col gap-1">
-                {['Explore', 'Network', 'Messages', 'Notifications', 'Profile', 'Settings'].map((item) => (
+
+              {/* Bottom Section: Settings & Profile (Sign Out) */}
+              <div className="space-y-4 border-t border-border pt-4">
+                {/* Settings Link */}
+                <button
+                  onClick={() => {
+                    navigateToView('Settings')
+                    setMobileMenuOpen(false)
+                  }}
+                  className={`w-full rounded-lg px-4 py-3 text-left text-xs font-bold ${view === 'Settings' ? 'bg-primary/5 text-primary' : 'hover:bg-muted'} flex items-center gap-2`}
+                >
+                  <Settings className="size-4" /> Settings
+                </button>
+
+                {/* Profile Card & Sign Out */}
+                {auth === 'logged' ? (
+                  <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-muted/45 border border-border/50">
+                    <button
+                      onClick={() => {
+                        navigateToView('Profile')
+                        setMobileMenuOpen(false)
+                      }}
+                      className="flex items-center gap-2 flex-1 min-w-0 text-left cursor-pointer"
+                    >
+                      <Avatar person={me} />
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-foreground truncate">{me.name}</p>
+                        <p className="text-[10px] text-muted-foreground truncate">View Profile</p>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleLogout()
+                        setMobileMenuOpen(false)
+                      }}
+                      className="px-2 py-1 rounded-md border border-destructive bg-destructive/5 text-[10px] font-bold text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+                    >
+                      Sign out
+                    </button>
+                  </div>
+                ) : (
                   <button
-                    key={item}
                     onClick={() => {
-                      navigateToView(item as View)
+                      setAuthMode('login')
                       setMobileMenuOpen(false)
                     }}
-                    className={`rounded-lg px-4 py-3 text-left text-xs font-bold ${view === item ? 'bg-primary/5 text-primary' : 'hover:bg-muted'}`}
+                    className="w-full rounded-lg bg-primary py-2.5 text-center text-xs font-bold text-primary-foreground hover:opacity-90 transition-opacity cursor-pointer"
                   >
-                    {item}
+                    Log in
                   </button>
-                ))}
+                )}
               </div>
             </div>
           </div>

@@ -246,16 +246,6 @@ export function ProfileView({
                     <Users className="size-3.5" /> {connectionsCount} followers
                   </button>
                 </div>
-
-                {/* Sign Out on Mobile */}
-                <div className="pt-1 md:hidden">
-                  <button
-                    onClick={onLogout}
-                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-destructive bg-destructive/5 text-destructive hover:bg-destructive/10 text-xs font-bold transition-colors cursor-pointer"
-                  >
-                    <LogOut className="size-3.5" /> Sign out
-                  </button>
-                </div>
               </div>
 
               {/* Edit button in top-right for desktop */}
