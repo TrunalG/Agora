@@ -290,7 +290,7 @@ export default function LandingPage() {
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-8">
             <Link href="/" className="flex items-center gap-2 group">
-              <span className="font-extrabold text-2xl tracking-tight text-primary">Agora</span>
+              <span className="font-bold text-2xl tracking-tight text-primary">Agora</span>
             </Link>
             <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
               <a href="#features" className="hover:text-foreground transition-colors">Features</a>
@@ -689,7 +689,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
             {/* Feature 1 (Col-span 2) */}
-            <div className="group md:col-span-2 rounded-2xl border border-border bg-card p-8 flex flex-col justify-between shadow-xs transition-all duration-300 hover:border-primary/30 hover:shadow-sm hover:-translate-y-0.5 reveal-on-scroll delay-150">
+            <div className="group md:col-span-2 rounded-2xl border border-border bg-card p-8 flex flex-col justify-between shadow-xs transition-all duration-500 ease-out hover:border-primary/40 hover:shadow-md hover:-translate-y-1 reveal-on-scroll delay-150">
               <div>
                 <div className="flex items-center justify-between mb-5">
                   <span className="text-[9px] font-mono tracking-widest font-bold text-muted-foreground uppercase border border-border bg-muted/40 px-2 py-0.5 rounded">01 // AUTOMATED MATCHING</span>
@@ -716,7 +716,7 @@ export default function LandingPage() {
             </div>
 
             {/* Feature 2 (Col-span 1) */}
-            <div className="group rounded-2xl border border-border bg-card p-8 flex flex-col justify-between shadow-xs transition-all duration-300 hover:border-primary/30 hover:shadow-sm hover:-translate-y-0.5 reveal-on-scroll delay-300">
+            <div className="group rounded-2xl border border-border bg-card p-8 flex flex-col justify-between shadow-xs transition-all duration-500 ease-out hover:border-primary/40 hover:shadow-md hover:-translate-y-1 reveal-on-scroll delay-300">
               <div>
                 <div className="flex items-center justify-between mb-5">
                   <span className="text-[9px] font-mono tracking-widest font-bold text-muted-foreground uppercase border border-border bg-muted/40 px-2 py-0.5 rounded">02 // INBOX ISOLATION</span>
@@ -733,7 +733,7 @@ export default function LandingPage() {
             </div>
 
             {/* Feature 3 (Col-span 1) */}
-            <div className="group rounded-2xl border border-border bg-card p-8 flex flex-col justify-between shadow-xs transition-all duration-300 hover:border-primary/30 hover:shadow-sm hover:-translate-y-0.5 reveal-on-scroll delay-700">
+            <div className="group rounded-2xl border border-border bg-card p-8 flex flex-col justify-between shadow-xs transition-all duration-500 ease-out hover:border-primary/40 hover:shadow-md hover:-translate-y-1 reveal-on-scroll delay-700">
               <div>
                 <div className="flex items-center justify-between mb-5">
                   <span className="text-[9px] font-mono tracking-widest font-bold text-muted-foreground uppercase border border-border bg-muted/40 px-2 py-0.5 rounded">03 // TRUST PROTOCOLS</span>
@@ -910,40 +910,40 @@ export default function LandingPage() {
               {/* Column 1 */}
               <div className="w-full text-left md:w-auto md:min-w-[120px]">
                 <h4 className="text-xs font-bold text-foreground uppercase tracking-wider mb-4">Explore</h4>
-                <ul className="space-y-2 text-xs text-muted-foreground">
-                  <li><Link href="/app" className="hover:text-foreground transition-colors">Browse Members</Link></li>
-                  <li><Link href="/app?mode=register" className="hover:text-foreground transition-colors">Match Simulator</Link></li>
+                <ul className="space-y-3 text-sm text-foreground/70">
+                  <li><Link href="/app" className="hover:text-primary transition-colors">Browse Members</Link></li>
+                  <li><Link href="/app?mode=register" className="hover:text-primary transition-colors">Match Simulator</Link></li>
                 </ul>
               </div>
               {/* Column 2 */}
               <div className="w-full text-left md:w-auto md:min-w-[120px]">
                 <h4 className="text-xs font-bold text-foreground uppercase tracking-wider mb-4">Features</h4>
-                <ul className="space-y-2 text-xs text-muted-foreground">
-                  <li><a href="#features" className="hover:text-foreground transition-colors">Smart Matchmaking</a></li>
-                  <li><a href="#features" className="hover:text-foreground transition-colors">Secure Inbox</a></li>
+                <ul className="space-y-3 text-sm text-foreground/70">
+                  <li><a href="#features" className="hover:text-primary transition-colors">Smart Matchmaking</a></li>
+                  <li><a href="#features" className="hover:text-primary transition-colors">Secure Inbox</a></li>
                 </ul>
               </div>
               {/* Column 3 */}
               <div className="w-full text-left md:w-auto md:min-w-[120px]">
                 <h4 className="text-xs font-bold text-foreground uppercase tracking-wider mb-4">Resources</h4>
-                <ul className="space-y-2 text-xs text-muted-foreground">
-                  <li><a href="#how-it-works" className="hover:text-foreground transition-colors">How it Works</a></li>
-                  {/* <li><a href="mailto:support@agora.exchange" className="hover:text-foreground transition-colors">Help & Support</a></li> */}
+                <ul className="space-y-3 text-sm text-foreground/70">
+                  <li><a href="#how-it-works" className="hover:text-primary transition-colors">How it Works</a></li>
+                  {/* <li><a href="mailto:support@agora.exchange" className="hover:text-primary transition-colors">Help & Support</a></li> */}
                 </ul>
               </div>
             </div>
           </div>
 
           {/* Bottom Zone */}
-          <div className="pt-8 border-t border-border/60 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-muted-foreground">
+          <div className="pt-8 border-t border-border/60 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-foreground/70">
             <div className="flex items-center gap-2">
-              <span className="font-extrabold text-2xl tracking-tight text-primary">Agora</span>
+              <span className="font-bold text-2xl tracking-tight text-primary">Agora</span>
               <span>&copy; 2026 Agora Platform. All rights reserved.</span>
             </div>
             <div className="flex gap-6">
-              <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
-              <Link href="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link>
-              {/* <a href="mailto:support@agora.exchange" className="hover:text-foreground transition-colors">Feedback & Support</a> */}
+              <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
+              <Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
+              {/* <a href="mailto:support@agora.exchange" className="hover:text-primary transition-colors">Feedback & Support</a> */}
             </div>
           </div>
         </div>
