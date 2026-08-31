@@ -527,7 +527,7 @@ export default function LandingPage() {
       {/* How it Works Section */}
       <section id="how-it-works" className="py-24 border-b border-border/40 bg-muted/5 relative overflow-hidden">
         {/* Background Aesthetic Logo Watermark */}
-        <div className="absolute top-1/2 right-0 translate-x-[20%] -translate-y-1/2 w-[350px] sm:w-[650px] h-[350px] sm:h-[650px] opacity-[0.03] pointer-events-none flex items-center justify-center">
+        <div className="absolute top-1/2 right-0 translate-x-[45%] sm:translate-x-[20%] -translate-y-1/2 w-[500px] sm:w-[650px] h-[500px] sm:h-[650px] opacity-[0.03] pointer-events-none flex items-center justify-center">
           <img src="/bg-logo.jpeg" alt="" className="w-full h-full object-contain mix-blend-multiply" />
         </div>
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 relative z-10">
