@@ -8,7 +8,7 @@ import {
   Menu,
   X,
   ArrowUpRight,
-  Sparkles
+  ArrowRightLeft
 } from 'lucide-react'
 
 // Professional members dataset for the Match Simulator
@@ -185,6 +185,28 @@ export default function LandingPage() {
     checkSession()
   }, [router])
 
+  useEffect(() => {
+    if (checkingSession) return
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('revealed')
+        }
+      })
+    }, {
+      threshold: 0.05,
+      rootMargin: '0px 0px -50px 0px'
+    })
+
+    const targets = document.querySelectorAll('.reveal-on-scroll')
+    targets.forEach(t => observer.observe(t))
+
+    return () => {
+      targets.forEach(t => observer.unobserve(t))
+    }
+  }, [checkingSession])
+
   // Resolve matching simulator user
   let activeMatch = simulatorData.find(u => u.teaches === selectedLearn && u.learns === selectedTeach)
   if (!activeMatch) {
@@ -211,7 +233,25 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans antialiased selection:bg-secondary/60 selection:text-secondary-foreground">
+    <div className="min-h-screen bg-background text-foreground font-sans antialiased select-none">
+      <style>{`
+        .reveal-on-scroll {
+          opacity: 0;
+          transform: translateY(24px);
+          transition: opacity 1000ms cubic-bezier(0.16, 1, 0.3, 1), transform 1000ms cubic-bezier(0.16, 1, 0.3, 1);
+          will-change: transform, opacity;
+        }
+        .reveal-on-scroll.revealed {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        .delay-150 {
+          transition-delay: 150ms;
+        }
+        .delay-300 {
+          transition-delay: 300ms;
+        }
+      `}</style>
       {/* Header Navigation */}
       <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -222,7 +262,7 @@ export default function LandingPage() {
             <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
               <a href="#features" className="hover:text-foreground transition-colors">Features</a>
               <a href="#how-it-works" className="hover:text-foreground transition-colors">How it works</a>
-              <a href="#testimonials" className="hover:text-foreground transition-colors">Testimonials</a>
+              {/* <a href="#testimonials" className="hover:text-foreground transition-colors">Testimonials</a> */}
             </nav>
           </div>
 
@@ -235,7 +275,7 @@ export default function LandingPage() {
             </Link> */}
             <Link
               href="/app?mode=register"
-              className="inline-flex h-9 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/95 transition-all shadow-xs cursor-pointer active:scale-[0.98]"
+              className="hidden md:inline-flex h-9 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/95 transition-all shadow-xs cursor-pointer active:scale-[0.98]"
             >
               Login/Sign Up
             </Link>
@@ -268,26 +308,19 @@ export default function LandingPage() {
             >
               How it works
             </a>
-            <a
+            {/* <a
               href="#testimonials"
               onClick={() => setMobileMenuOpen(false)}
               className="border-b border-border/50 pb-2 text-muted-foreground hover:text-foreground"
             >
               Testimonials
-            </a>
-            <Link
-              href="/app?mode=login"
-              onClick={() => setMobileMenuOpen(false)}
-              className="inline-flex h-11 items-center justify-center rounded-lg border border-border bg-card px-4 text-sm font-medium text-foreground hover:bg-muted/40 transition-all cursor-pointer"
-            >
-              Log In
-            </Link>
+            </a> */}
             <Link
               href="/app?mode=register"
               onClick={() => setMobileMenuOpen(false)}
               className="inline-flex h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/95 transition-all cursor-pointer"
             >
-              Get Started
+              Login/Sign Up
             </Link>
           </nav>
         </div>
@@ -299,9 +332,9 @@ export default function LandingPage() {
           <div className="lg:grid lg:grid-cols-12 lg:gap-12 items-center">
 
             {/* Copy Block */}
-            <div className="lg:col-span-6 flex flex-col justify-center">
+            <div className="lg:col-span-6 flex flex-col justify-center reveal-on-scroll delay-150">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-[11px] font-semibold text-muted-foreground tracking-wide w-fit mb-6 shadow-2xs">
-                <Sparkles className="size-3 text-muted-foreground/80" /> Peer-to-Peer Skill Exchange
+                <ArrowRightLeft className="size-3 text-muted-foreground/80" /> Peer-to-Peer Skill Exchange
               </span>
               <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-foreground leading-[1.15] mb-5">
                 Learn a Skill.<br />
@@ -329,7 +362,7 @@ export default function LandingPage() {
             </div>
 
             {/* Interactive Exchange Sandbox */}
-            <div className="mt-16 lg:mt-0 lg:col-span-6 flex justify-center relative">
+            <div className="mt-16 lg:mt-0 lg:col-span-6 flex justify-center relative reveal-on-scroll delay-300">
 
               {/* Sticker 1: Define what you learn (Top Left) */}
               <div className="absolute top-10 -left-28 hidden xl:flex flex-col gap-0.5 rounded-lg border border-border/80 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs -rotate-2 select-none z-20">
@@ -543,67 +576,69 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section id="testimonials" className="py-20 border-t border-b border-border/80 overflow-hidden">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-3xl font-extrabold tracking-tight text-foreground mb-4">
-              Real exchanges, real growth
-            </h2>
-            <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
-              Hear from professionals who used peer skill trades to expand their horizons.
-            </p>
+      {/* Testimonials Section (Temporarily hidden for beta) */}
+      {false && (
+        <section id="testimonials" className="py-20 border-t border-b border-border/80 overflow-hidden">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="text-center max-w-2xl mx-auto mb-16">
+              <h2 className="text-3xl font-extrabold tracking-tight text-foreground mb-4">
+                Real exchanges, real growth
+              </h2>
+              <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
+                Hear from professionals who used peer skill trades to expand their horizons.
+              </p>
+            </div>
           </div>
-        </div>
 
-        {/* Seamless Marquee Slider Loop */}
-        <div className="relative mx-auto max-w-7xl overflow-hidden py-4">
-          <style>{`
-            @keyframes marquee {
-              0% { transform: translateX(0); }
-              100% { transform: translateX(-50%); }
-            }
-            .marquee-inner {
-              display: flex;
-              width: max-content;
-              animation: marquee 45s linear infinite;
-            }
-            .marquee-inner:hover {
-              animation-play-state: paused;
-            }
-          `}</style>
+          {/* Seamless Marquee Slider Loop */}
+          <div className="relative mx-auto max-w-7xl overflow-hidden py-4">
+            <style>{`
+              @keyframes marquee {
+                0% { transform: translateX(0); }
+                100% { transform: translateX(-50%); }
+              }
+              .marquee-inner {
+                display: flex;
+                width: max-content;
+                animation: marquee 45s linear infinite;
+              }
+              .marquee-inner:hover {
+                animation-play-state: paused;
+              }
+            `}</style>
 
-          {/* Left and Right Fade Gradients */}
-          <div className="absolute left-0 top-0 bottom-0 w-28 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none"></div>
-          <div className="absolute right-0 top-0 bottom-0 w-28 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none"></div>
+            {/* Left and Right Fade Gradients */}
+            <div className="absolute left-0 top-0 bottom-0 w-28 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none"></div>
+            <div className="absolute right-0 top-0 bottom-0 w-28 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none"></div>
 
-          <div className="marquee-inner flex gap-6 px-4">
-            {/* Map the testimonials twice to achieve seamless visual looping when moving to -50% */}
-            {[...testimonials, ...testimonials].map((t, idx) => (
-              <div
-                key={idx}
-                className="w-[340px] shrink-0 rounded-2xl border border-border bg-card p-6 shadow-2xs flex flex-col justify-between transition-all duration-300 hover:border-primary/20 hover:shadow-xs"
-              >
-                <p className="text-sm text-muted-foreground leading-relaxed italic mb-6">
-                  "{t.quote}"
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="flex size-8 items-center justify-center rounded-full bg-accent/40 text-xs font-bold text-accent-foreground">
-                    {t.initials}
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-foreground">{t.name}</h4>
-                    <p className="text-[10px] text-muted-foreground">{t.role} • {t.location}</p>
+            <div className="marquee-inner flex gap-6 px-4">
+              {/* Map the testimonials twice to achieve seamless visual looping when moving to -50% */}
+              {[...testimonials, ...testimonials].map((t, idx) => (
+                <div
+                  key={idx}
+                  className="w-[340px] shrink-0 rounded-2xl border border-border bg-card p-6 shadow-2xs flex flex-col justify-between transition-all duration-300 hover:border-primary/20 hover:shadow-xs"
+                >
+                  <p className="text-sm text-muted-foreground leading-relaxed italic mb-6">
+                    "{t.quote}"
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <div className="flex size-8 items-center justify-center rounded-full bg-accent/40 text-xs font-bold text-accent-foreground">
+                      {t.initials}
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-foreground">{t.name}</h4>
+                      <p className="text-[10px] text-muted-foreground">{t.role} • {t.location}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Bento Grid Features Section */}
-      <section id="features" className="py-20 bg-muted/20 border-t border-b border-border/80">
+      <section id="features" className="py-20 bg-muted/20 border-t border-b border-border/80 reveal-on-scroll">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-xl mx-auto mb-16">
             <h2 className="text-3xl font-extrabold tracking-tight text-foreground mb-4">
@@ -701,7 +736,7 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Box Section */}
-      <section className="py-20">
+      <section className="py-20 reveal-on-scroll">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="relative overflow-hidden rounded-3xl border border-border bg-muted/30 p-12 sm:p-20 text-center shadow-xs transition-all duration-300 hover:border-primary/20">
             <style>{`
@@ -813,7 +848,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border bg-muted/10 pt-16 pb-12">
+      <footer className="border-t border-border bg-muted/10 pt-16 pb-12 reveal-on-scroll">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {/* Top Zone */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 pb-12">

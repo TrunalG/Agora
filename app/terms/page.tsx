@@ -70,12 +70,12 @@ export default function TermsOfService() {
               </p>
             </section>
 
-            <section className="mb-10">
+            {/* <section className="mb-10">
               <h2 className="text-2xl font-bold mt-10 mb-4">7. Contact Us</h2>
               <p className="mb-4 text-muted-foreground leading-relaxed">
                 If you have any questions about these Terms, please contact us at: <a href="mailto:support@agora.exchange" className="font-semibold text-primary hover:underline">support@agora.exchange</a>.
               </p>
-            </section>
+            </section> */}
           </article>
         </div>
       </main>

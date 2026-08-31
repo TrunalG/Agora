@@ -65,12 +65,12 @@ export default function PrivacyPolicy() {
               </p>
             </section>
 
-            <section className="mb-10">
+            {/* <section className="mb-10">
               <h2 className="text-2xl font-bold mt-10 mb-4">6. Contact Us</h2>
               <p className="mb-4 text-muted-foreground leading-relaxed">
                 If you have questions or comments about this Privacy Policy, please contact us at: <a href="mailto:privacy@agora.exchange" className="font-semibold text-primary hover:underline">privacy@agora.exchange</a>.
               </p>
-            </section>
+            </section> */}
           </article>
         </div>
       </main>
