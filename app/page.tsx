@@ -225,17 +225,8 @@ export default function LandingPage() {
     }
   }, [checkingSession])
 
-  // Resolve matching simulator user
-  let activeMatch = simulatorData.find(u => u.teaches === selectedLearn && u.learns === selectedTeach)
-  if (!activeMatch) {
-    activeMatch = simulatorData.find(u => u.teaches === selectedLearn)
-  }
-  if (!activeMatch) {
-    activeMatch = simulatorData.find(u => u.learns === selectedTeach)
-  }
-  if (!activeMatch) {
-    activeMatch = simulatorData[0]
-  }
+  // Use a fixed match for the simulator demo to prevent jarring layout changes during interactions
+  const activeMatch = simulatorData.find(u => u.name === 'Jordan Lee') || simulatorData[0]
 
   const isPerfectMatch = activeMatch.teaches === selectedLearn && activeMatch.learns === selectedTeach
 
