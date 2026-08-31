@@ -525,8 +525,12 @@ export default function LandingPage() {
       </section>
 
       {/* How it Works Section */}
-      <section id="how-it-works" className="py-24 border-b border-border/40 bg-muted/5">
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+      <section id="how-it-works" className="py-24 border-b border-border/40 bg-muted/5 relative overflow-hidden">
+        {/* Background Aesthetic Logo Watermark */}
+        <div className="absolute top-1/2 right-0 translate-x-[30%] -translate-y-1/2 w-[600px] sm:w-[1000px] h-[600px] sm:h-[1000px] opacity-[0.03] pointer-events-none flex items-center justify-center">
+          <img src="/logo.png" alt="" className="w-full h-full object-contain" />
+        </div>
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center max-w-2xl mx-auto mb-20">
             <h2 className="text-3xl font-extrabold tracking-tight text-foreground mb-4">
               How Agora works in three steps
@@ -772,10 +776,6 @@ export default function LandingPage() {
       <section className="py-20 reveal-on-scroll">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="relative overflow-hidden rounded-3xl border border-border bg-muted/30 p-12 sm:p-20 text-center shadow-xs transition-all duration-300 hover:border-primary/20">
-            {/* Background Aesthetic Logo Watermark */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] sm:w-[800px] h-[600px] sm:h-[800px] opacity-[0.04] pointer-events-none flex items-center justify-center -rotate-[15deg]">
-              <img src="/logo.png" alt="" className="w-full h-full object-contain drop-shadow-2xl" />
-            </div>
             <style>{`
               @keyframes float-gentle {
                 0%, 100% { transform: translateY(0px) rotate(var(--rot-deg, 0deg)); }
