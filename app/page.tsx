@@ -245,16 +245,8 @@ export default function LandingPage() {
 
   const isPerfectMatch = activeMatch.teaches === selectedLearn && activeMatch.learns === selectedTeach
 
-  if (checkingSession) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
-          <p className="text-xs text-muted-foreground tracking-wider uppercase font-medium">Loading Agora...</p>
-        </div>
-      </div>
-    )
-  }
+  // Render the landing page immediately to optimize First Contentful Paint (FCP) and Largest Contentful Paint (LCP).
+  // Session check redirects to /app in the background if the user is logged in.
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans antialiased select-none">
