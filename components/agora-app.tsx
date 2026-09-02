@@ -6,6 +6,8 @@ import {
   Bell,
   Check,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Compass,
   LogOut,
   Menu,
@@ -1906,14 +1908,15 @@ export default function AgoraApp() {
                   </div>
                 </div>
 
-                {/* Top Pagination & Search Metadata Header */}
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground px-1 pb-1">
-                  <span>
-                    Showing page <span className="font-bold text-foreground">{currentPage}</span> of <span className="font-bold text-foreground">{totalPages}</span> ({shown.length} total members)
+                {/* Top Pagination & Arrow Navigation Unit */}
+                <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground px-1 pb-1">
+                  <span className="hidden sm:inline font-semibold text-foreground">
+                    {filter === 'all' ? 'All Members' : filter === 'match' ? 'Recommended Matches' : filter === 'teach' ? 'Available to Teach' : 'Looking to Learn'}
                   </span>
 
-                  {totalPages > 1 && (
-                    <div className="flex items-center gap-1.5 flex-wrap justify-center">
+                  {/* Right-Aligned Arrow Navigation Control Unit */}
+                  {totalPages > 1 ? (
+                    <div className="flex items-center gap-2 ml-auto">
                       <button
                         onClick={() => {
                           if (currentPage > 1) {
@@ -1922,27 +1925,16 @@ export default function AgoraApp() {
                           }
                         }}
                         disabled={currentPage === 1}
-                        className="px-2.5 py-1 rounded-lg border border-border bg-card text-xs font-semibold hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                        className="flex size-8 items-center justify-center rounded-xl border border-border bg-card text-foreground hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-all shadow-3xs"
+                        title="Previous page"
                       >
-                        Previous
+                        <ChevronLeft className="size-4" />
                       </button>
 
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-                        <button
-                          key={pageNum}
-                          onClick={() => {
-                            setCurrentPage(pageNum)
-                            window.scrollTo({ top: 0, behavior: 'smooth' })
-                          }}
-                          className={`size-7 rounded-lg text-xs font-bold transition-all border cursor-pointer ${
-                            currentPage === pageNum
-                              ? 'bg-primary text-primary-foreground border-primary'
-                              : 'border-border bg-card text-foreground hover:bg-muted'
-                          }`}
-                        >
-                          {pageNum}
-                        </button>
-                      ))}
+                      <div className="px-3 py-1 rounded-xl bg-card border border-border text-xs font-bold text-foreground shadow-3xs flex items-center gap-1">
+                        <span>Page {currentPage}</span>
+                        <span className="text-muted-foreground font-normal">of {totalPages}</span>
+                      </div>
 
                       <button
                         onClick={() => {
@@ -1952,12 +1944,13 @@ export default function AgoraApp() {
                           }
                         }}
                         disabled={currentPage === totalPages}
-                        className="px-2.5 py-1 rounded-lg border border-border bg-card text-xs font-semibold hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                        className="flex size-8 items-center justify-center rounded-xl border border-border bg-card text-foreground hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-all shadow-3xs"
+                        title="Next page"
                       >
-                        Next
+                        <ChevronRight className="size-4" />
                       </button>
                     </div>
-                  )}
+                  ) : null}
                 </div>
 
                 {/* Member Grid Layout (Diverges from LinkedIn stream) */}
@@ -2074,6 +2067,13 @@ export default function AgoraApp() {
                     </div>
                   )}
                 </div>
+
+                {/* Bottom Footer Caption */}
+                {shown.length > 0 && (
+                  <div className="text-center pt-4 pb-2 text-[11px] text-muted-foreground">
+                    Showing {shown.length > 0 ? (currentPage - 1) * ITEMS_PER_PAGE + 1 : 0}–{Math.min(currentPage * ITEMS_PER_PAGE, shown.length)} of {shown.length} total members
+                  </div>
+                )}
               </section>
 
             </div>
