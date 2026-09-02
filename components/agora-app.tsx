@@ -2659,140 +2659,180 @@ export default function AgoraApp() {
         </main>
       </div>
 
-      {/* Floating Bottom-Right Messaging Drawer */}
-      <div className="fixed bottom-0 right-6 z-40 w-72 rounded-t-xl border border-border bg-card shadow-lg overflow-hidden hidden sm:block">
-        <button
-          onClick={() => setMessagingDrawerOpen(!messagingDrawerOpen)}
-          className="w-full flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/20 hover:bg-muted/40 transition-colors"
-        >
-          <div className="flex items-center gap-2">
-            <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="font-bold text-xs text-foreground">Active Chats</span>
-          </div>
-          <ChevronDown className={`size-4 text-muted-foreground transition-transform ${messagingDrawerOpen ? 'rotate-180' : ''}`} />
-        </button>
-
+      {/* Floating Bottom-Right Messaging FAB & Popover (Prevents overlapping pagination controls) */}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end hidden sm:flex">
+        {/* Floating Quick Chat Popover Window (Positions above the FAB button) */}
         {messagingDrawerOpen && (
-          <div className="h-85 flex flex-col bg-card">
-            {drawerActiveChat ? (
-              (() => {
-                const activeConv = conversationsList.find((c) => c.id === drawerActiveChat)
-                return activeConv ? (
-                  <>
-                    {/* Chat Header */}
-                    <div className="flex items-center justify-between p-2.5 border-b border-border bg-slate-50 dark:bg-slate-900/10">
-                      <button
-                        onClick={() => setDrawerActiveChat(null)}
-                        className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground cursor-pointer"
-                      >
-                        <ArrowLeft className="size-3" />
-                        <span>Back</span>
-                      </button>
-                      <div className="flex items-center gap-1.5 overflow-hidden">
-                        <Avatar person={{ name: activeConv.participant?.name, image: activeConv.participant?.profileImage }} />
-                        <span className="font-bold text-[10px] text-foreground truncate max-w-[90px]">
-                          {activeConv.participant?.name || 'User'}
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => {
-                          setDrawerActiveChat(null)
-                          setMessagingDrawerOpen(false)
-                        }}
-                        className="p-1 rounded-md text-muted-foreground hover:text-foreground cursor-pointer"
-                      >
-                        <X className="size-3" />
-                      </button>
-                    </div>
+          <div className="mb-3 w-80 sm:w-88 rounded-2xl border border-border bg-card shadow-2xl overflow-hidden flex flex-col h-[460px] animate-in fade-in slide-in-from-bottom-4 duration-200">
+            {/* Popover Header */}
+            <div className="flex items-center justify-between px-4 py-3 bg-card border-b border-border">
+              <div className="flex items-center gap-2">
+                <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                  <MessageCircle className="size-4" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-xs text-foreground">Quick Chat</h4>
+                  <p className="text-[10px] text-muted-foreground">Active Messages & Conversations</p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setMessagingDrawerOpen(false)
+                  setDrawerActiveChat(null)
+                }}
+                className="p-1 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer transition-colors"
+                title="Close chat"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
 
-                    {/* Chat Messages Body */}
-                    <div className="flex-1 overflow-y-auto p-3.5 space-y-2 bg-slate-50/20 dark:bg-slate-900/5">
-                      {drawerChatHistory.map((msg) => {
-                        const isMe = msg.senderId === me.id
-                        return (
-                          <div
-                            key={msg.id}
-                            className={`flex flex-col max-w-[85%] ${
-                              isMe ? 'ml-auto items-end' : 'mr-auto items-start'
-                            }`}
-                          >
+            {/* Popover Content */}
+            <div className="flex-1 flex flex-col overflow-hidden bg-background">
+              {drawerActiveChat ? (
+                (() => {
+                  const activeConv = conversationsList.find((c) => c.id === drawerActiveChat)
+                  return activeConv ? (
+                    <>
+                      {/* Thread Header */}
+                      <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/20">
+                        <button
+                          onClick={() => setDrawerActiveChat(null)}
+                          className="flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline cursor-pointer"
+                        >
+                          <ArrowLeft className="size-3.5" />
+                          <span>All Chats</span>
+                        </button>
+                        <div className="flex items-center gap-2 overflow-hidden">
+                          <Avatar person={{ name: activeConv.participant?.name, image: activeConv.participant?.profileImage }} />
+                          <span className="font-bold text-xs text-foreground truncate max-w-[120px]">
+                            {activeConv.participant?.name || 'User'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Chat Messages Body */}
+                      <div className="flex-1 overflow-y-auto p-3.5 space-y-2 bg-slate-50/50 dark:bg-slate-950/20">
+                        {drawerChatHistory.map((msg) => {
+                          const isMe = msg.senderId === me.id
+                          return (
                             <div
-                              className={`rounded-lg px-2.5 py-1.5 text-[11px] leading-snug ${
-                                isMe
-                                  ? 'bg-primary text-primary-foreground font-semibold rounded-br-none shadow-3xs'
-                                  : 'bg-muted text-foreground rounded-bl-none border border-border/40'
+                              key={msg.id}
+                              className={`flex flex-col max-w-[85%] ${
+                                isMe ? 'ml-auto items-end' : 'mr-auto items-start'
                               }`}
                             >
-                              {msg.content}
+                              <div
+                                className={`rounded-xl px-3 py-2 text-xs leading-relaxed ${
+                                  isMe
+                                    ? 'bg-primary text-primary-foreground font-medium rounded-br-xs shadow-xs'
+                                    : 'bg-card text-foreground rounded-bl-xs border border-border shadow-2xs'
+                                }`}
+                              >
+                                {msg.content}
+                              </div>
                             </div>
+                          )
+                        })}
+                        {drawerChatHistory.length === 0 && (
+                          <div className="text-center py-16 text-xs text-muted-foreground">
+                            No messages yet. Say hello!
                           </div>
-                        )
-                      })}
-                      {drawerChatHistory.length === 0 && (
-                        <div className="text-center py-12 text-[10px] text-muted-foreground">
-                          No messages yet. Say hello!
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Chat Composer Footer */}
-                    <div className="p-2 border-t border-border bg-card flex gap-1.5">
-                      <input
-                        type="text"
-                        placeholder="Type a message..."
-                        value={drawerChatMessage}
-                        onChange={(e) => setDrawerChatMessage(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && sendDrawerMessage()}
-                        className="h-8 flex-1 rounded-lg border border-input bg-background px-3 text-[11px] outline-none focus:ring-1 focus:ring-primary/20"
-                      />
-                      <button
-                        onClick={sendDrawerMessage}
-                        className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground hover:opacity-90 transition-opacity cursor-pointer"
-                      >
-                        <Send className="size-3.5" />
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <div className="p-6 text-center text-xs text-muted-foreground">
-                    Chat not found.
-                  </div>
-                )
-              })()
-            ) : (
-              <div className="flex-1 overflow-y-auto p-1 divide-y divide-border">
-                {conversationsList
-                  .filter((conv) => {
-                    const partnerId = conv.participant?.id || conv.participant?._id
-                    return !partnerId || !blockedUserIds.has(partnerId)
-                  })
-                  .map((conv) => (
-                    <div
-                      key={conv.id}
-                      onClick={() => {
-                        setDrawerActiveChat(conv.id)
-                      }}
-                      className="flex items-center gap-3 p-2.5 hover:bg-muted/40 cursor-pointer text-xs rounded-lg transition-colors"
-                    >
-                      <Avatar person={{ name: conv.participant?.name, image: conv.participant?.profileImage }} />
-                      <div className="flex-1 overflow-hidden">
-                        <p className="font-bold text-foreground truncate">{conv.participant?.name || 'User'}</p>
-                        <p className="text-[10px] text-muted-foreground truncate">{conv.lastMessage?.content || 'Continue messaging'}</p>
+                        )}
                       </div>
+
+                      {/* Chat Composer Footer */}
+                      <div className="p-2.5 border-t border-border bg-card flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="Type a message..."
+                          value={drawerChatMessage}
+                          onChange={(e) => setDrawerChatMessage(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && sendDrawerMessage()}
+                          className="h-9 flex-1 rounded-xl border border-input bg-background px-3 text-xs outline-none focus:ring-1.5 focus:ring-primary/40 transition-all"
+                        />
+                        <button
+                          onClick={sendDrawerMessage}
+                          className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground hover:opacity-90 transition-opacity cursor-pointer shadow-xs shrink-0"
+                        >
+                          <Send className="size-4" />
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="p-8 text-center text-xs text-muted-foreground">
+                      Chat not found.
                     </div>
-                  ))}
-                {conversationsList.filter((c) => {
-                  const partnerId = c.participant?.id || c.participant?._id
-                  return !partnerId || !blockedUserIds.has(partnerId)
-                }).length === 0 && (
-                  <div className="p-6 text-center text-xs text-muted-foreground">
-                    No active messaging threads yet.
-                  </div>
-                )}
-              </div>
-            )}
+                  )
+                })()
+              ) : (
+                <div className="flex-1 overflow-y-auto p-2 divide-y divide-border/60">
+                  {conversationsList
+                    .filter((conv) => {
+                      const partnerId = conv.participant?.id || conv.participant?._id
+                      return !partnerId || !blockedUserIds.has(partnerId)
+                    })
+                    .map((conv) => (
+                      <div
+                        key={conv.id}
+                        onClick={() => {
+                          setDrawerActiveChat(conv.id)
+                        }}
+                        className="flex items-center gap-3 p-2.5 hover:bg-muted/50 cursor-pointer text-xs rounded-xl transition-colors group"
+                      >
+                        <Avatar person={{ name: conv.participant?.name, image: conv.participant?.profileImage }} />
+                        <div className="flex-1 overflow-hidden">
+                          <div className="flex items-center justify-between">
+                            <p className="font-bold text-foreground truncate group-hover:text-primary transition-colors">{conv.participant?.name || 'User'}</p>
+                            {conv.unreadCount ? (
+                              <span className="flex size-4.5 items-center justify-center rounded-full bg-destructive text-[9px] font-bold text-white shadow-3xs">
+                                {conv.unreadCount}
+                              </span>
+                            ) : null}
+                          </div>
+                          <p className="text-[11px] text-muted-foreground truncate mt-0.5">{conv.lastMessage?.content || 'Continue conversation'}</p>
+                        </div>
+                      </div>
+                    ))}
+                  {conversationsList.filter((c) => {
+                    const partnerId = c.participant?.id || c.participant?._id
+                    return !partnerId || !blockedUserIds.has(partnerId)
+                  }).length === 0 && (
+                    <div className="p-10 text-center text-xs text-muted-foreground space-y-1">
+                      <p className="font-semibold text-foreground">No active chats</p>
+                      <p className="text-[11px]">Connect with members to start messaging.</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         )}
+
+        {/* Floating Action Button (FAB) Toggle */}
+        <button
+          onClick={() => setMessagingDrawerOpen(!messagingDrawerOpen)}
+          className={`group flex items-center gap-2.5 rounded-full px-4 py-3 shadow-xl transition-all duration-200 cursor-pointer border ${
+            messagingDrawerOpen
+              ? 'bg-card text-foreground border-border hover:bg-muted'
+              : 'bg-primary text-primary-foreground border-primary/20 hover:scale-105 hover:shadow-2xl'
+          }`}
+          title="Toggle Quick Chat"
+        >
+          <div className="relative flex items-center justify-center">
+            <MessageCircle className="size-5 transition-transform group-hover:rotate-12" />
+            <span className="absolute -top-1 -right-1 size-2.5 rounded-full bg-emerald-500 ring-2 ring-background animate-pulse" />
+          </div>
+          <span className="font-bold text-xs tracking-tight">Quick Chat</span>
+          {(() => {
+            const totalUnread = conversationsList.reduce((acc, c) => acc + (c.unreadCount || 0), 0)
+            return totalUnread > 0 ? (
+              <span className="flex size-5 items-center justify-center rounded-full bg-destructive text-[10px] font-extrabold text-white shadow-2xs">
+                {totalUnread}
+              </span>
+            ) : null
+          })()}
+        </button>
       </div>
 
       {/* Member Profile Modal Overlay */}
