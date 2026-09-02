@@ -1908,15 +1908,16 @@ export default function AgoraApp() {
                   </div>
                 </div>
 
-                {/* Top Pagination & Arrow Navigation Unit */}
-                <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground px-1 pb-1">
-                  <span className="hidden sm:inline font-semibold text-foreground">
-                    {filter === 'all' ? 'All Members' : filter === 'match' ? 'Recommended Matches' : filter === 'teach' ? 'Available to Teach' : 'Looking to Learn'}
-                  </span>
+                {/* Top Pagination Row */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between text-xs text-muted-foreground px-1 pb-1">
+                    {/* Left Side: Page indicator text "1 of 2" */}
+                    <span className="font-bold text-foreground text-xs">
+                      {currentPage} of {totalPages}
+                    </span>
 
-                  {/* Right-Aligned Arrow Navigation Control Unit */}
-                  {totalPages > 1 ? (
-                    <div className="flex items-center gap-2 ml-auto">
+                    {/* Right Side: Mockup Navigation Controls [ < ] [ 1 ˅ ] [ > ] */}
+                    <div className="flex items-center gap-1.5 ml-auto">
                       <button
                         onClick={() => {
                           if (currentPage > 1) {
@@ -1931,9 +1932,25 @@ export default function AgoraApp() {
                         <ChevronLeft className="size-4" />
                       </button>
 
-                      <div className="px-3 py-1 rounded-xl bg-card border border-border text-xs font-bold text-foreground shadow-3xs flex items-center gap-1">
-                        <span>Page {currentPage}</span>
-                        <span className="text-muted-foreground font-normal">of {totalPages}</span>
+                      <div className="relative">
+                        <select
+                          value={currentPage}
+                          onChange={(e) => {
+                            const val = Number(e.target.value)
+                            if (val) {
+                              setCurrentPage(val)
+                              window.scrollTo({ top: 0, behavior: 'smooth' })
+                            }
+                          }}
+                          className="appearance-none h-8 pl-3 pr-7 rounded-xl bg-card border border-border text-xs font-bold text-foreground shadow-3xs cursor-pointer outline-none focus:ring-1 focus:ring-primary/40 transition-all"
+                        >
+                          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                            <option key={p} value={p}>
+                              {p}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
                       </div>
 
                       <button
@@ -1950,8 +1967,8 @@ export default function AgoraApp() {
                         <ChevronRight className="size-4" />
                       </button>
                     </div>
-                  ) : null}
-                </div>
+                  </div>
+                )}
 
                 {/* Member Grid Layout (Diverges from LinkedIn stream) */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -2067,13 +2084,6 @@ export default function AgoraApp() {
                     </div>
                   )}
                 </div>
-
-                {/* Bottom Footer Caption */}
-                {shown.length > 0 && (
-                  <div className="text-center pt-4 pb-2 text-[11px] text-muted-foreground">
-                    Showing {shown.length > 0 ? (currentPage - 1) * ITEMS_PER_PAGE + 1 : 0}–{Math.min(currentPage * ITEMS_PER_PAGE, shown.length)} of {shown.length} total members
-                  </div>
-                )}
               </section>
 
             </div>
