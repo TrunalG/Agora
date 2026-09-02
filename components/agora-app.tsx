@@ -140,6 +140,7 @@ export default function AgoraApp() {
   const [drawerChatHistory, setDrawerChatHistory] = useState<any[]>([])
   const [drawerChatMessage, setDrawerChatMessage] = useState('')
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const quickChatRef = useRef<HTMLDivElement>(null)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
@@ -165,6 +166,9 @@ export default function AgoraApp() {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setMeDropdownOpen(false)
+      }
+      if (quickChatRef.current && !quickChatRef.current.contains(event.target as Node)) {
+        setMessagingDrawerOpen(false)
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -1902,15 +1906,57 @@ export default function AgoraApp() {
                   </div>
                 </div>
 
-                {/* Search Metadata Header */}
-                <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
+                {/* Top Pagination & Search Metadata Header */}
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground px-1 pb-1">
                   <span>
-                    Showing {shown.length > 0 ? (currentPage - 1) * ITEMS_PER_PAGE + 1 : 0}–{Math.min(currentPage * ITEMS_PER_PAGE, shown.length)} of {shown.length} members based on filter preferences
+                    Showing page <span className="font-bold text-foreground">{currentPage}</span> of <span className="font-bold text-foreground">{totalPages}</span> ({shown.length} total members)
                   </span>
+
                   {totalPages > 1 && (
-                    <span className="font-semibold text-foreground">
-                      Page {currentPage} of {totalPages}
-                    </span>
+                    <div className="flex items-center gap-1.5 flex-wrap justify-center">
+                      <button
+                        onClick={() => {
+                          if (currentPage > 1) {
+                            setCurrentPage((p) => p - 1)
+                            window.scrollTo({ top: 0, behavior: 'smooth' })
+                          }
+                        }}
+                        disabled={currentPage === 1}
+                        className="px-2.5 py-1 rounded-lg border border-border bg-card text-xs font-semibold hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                      >
+                        Previous
+                      </button>
+
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                        <button
+                          key={pageNum}
+                          onClick={() => {
+                            setCurrentPage(pageNum)
+                            window.scrollTo({ top: 0, behavior: 'smooth' })
+                          }}
+                          className={`size-7 rounded-lg text-xs font-bold transition-all border cursor-pointer ${
+                            currentPage === pageNum
+                              ? 'bg-primary text-primary-foreground border-primary'
+                              : 'border-border bg-card text-foreground hover:bg-muted'
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      ))}
+
+                      <button
+                        onClick={() => {
+                          if (currentPage < totalPages) {
+                            setCurrentPage((p) => p + 1)
+                            window.scrollTo({ top: 0, behavior: 'smooth' })
+                          }
+                        }}
+                        disabled={currentPage === totalPages}
+                        className="px-2.5 py-1 rounded-lg border border-border bg-card text-xs font-semibold hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                      >
+                        Next
+                      </button>
+                    </div>
                   )}
                 </div>
 
@@ -2028,60 +2074,6 @@ export default function AgoraApp() {
                     </div>
                   )}
                 </div>
-
-                {/* Pagination Controls */}
-                {totalPages > 1 && (
-                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-border pt-6 mt-6">
-                    <div className="text-xs text-muted-foreground">
-                      Showing page <span className="font-bold text-foreground">{currentPage}</span> of <span className="font-bold text-foreground">{totalPages}</span> ({shown.length} total members)
-                    </div>
-
-                    <div className="flex items-center gap-1.5 flex-wrap justify-center">
-                      <button
-                        onClick={() => {
-                          if (currentPage > 1) {
-                            setCurrentPage((p) => p - 1)
-                            window.scrollTo({ top: 0, behavior: 'smooth' })
-                          }
-                        }}
-                        disabled={currentPage === 1}
-                        className="px-3 py-1.5 rounded-lg border border-border bg-card text-xs font-semibold hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
-                      >
-                        Previous
-                      </button>
-
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-                        <button
-                          key={pageNum}
-                          onClick={() => {
-                            setCurrentPage(pageNum)
-                            window.scrollTo({ top: 0, behavior: 'smooth' })
-                          }}
-                          className={`size-8 rounded-lg text-xs font-bold transition-all border cursor-pointer ${
-                            currentPage === pageNum
-                              ? 'bg-primary text-primary-foreground border-primary'
-                              : 'border-border bg-card text-foreground hover:bg-muted'
-                          }`}
-                        >
-                          {pageNum}
-                        </button>
-                      ))}
-
-                      <button
-                        onClick={() => {
-                          if (currentPage < totalPages) {
-                            setCurrentPage((p) => p + 1)
-                            window.scrollTo({ top: 0, behavior: 'smooth' })
-                          }
-                        }}
-                        disabled={currentPage === totalPages}
-                        className="px-3 py-1.5 rounded-lg border border-border bg-card text-xs font-semibold hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
-                      >
-                        Next
-                      </button>
-                    </div>
-                  </div>
-                )}
               </section>
 
             </div>
@@ -2660,31 +2652,69 @@ export default function AgoraApp() {
       </div>
 
       {/* Floating Bottom-Right Messaging FAB & Popover (Prevents overlapping pagination controls) */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end hidden sm:flex">
+      <div ref={quickChatRef} className="fixed bottom-6 right-6 z-50 flex flex-col items-end hidden sm:flex">
         {/* Floating Quick Chat Popover Window (Positions above the FAB button) */}
         {messagingDrawerOpen && (
           <div className="mb-3 w-80 sm:w-88 rounded-2xl border border-border bg-card shadow-2xl overflow-hidden flex flex-col h-[460px] animate-in fade-in slide-in-from-bottom-4 duration-200">
-            {/* Popover Header */}
-            <div className="flex items-center justify-between px-4 py-3 bg-card border-b border-border">
-              <div className="flex items-center gap-2">
-                <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                  <MessageCircle className="size-4" />
+            {/* Popover Header Bar */}
+            <div className="flex items-center justify-between px-3.5 py-2.5 bg-card border-b border-border min-h-[52px]">
+              {drawerActiveChat ? (
+                (() => {
+                  const activeConv = conversationsList.find((c) => c.id === drawerActiveChat)
+                  return (
+                    <div className="flex items-center justify-between w-full gap-2">
+                      <div className="flex items-center gap-2 overflow-hidden min-w-0">
+                        <button
+                          onClick={() => setDrawerActiveChat(null)}
+                          className="flex items-center justify-center p-1 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer transition-colors shrink-0"
+                          title="Back to all chats"
+                        >
+                          <ArrowLeft className="size-4" />
+                        </button>
+                        {activeConv && (
+                          <div className="flex items-center gap-2 overflow-hidden min-w-0">
+                            <Avatar person={{ name: activeConv.participant?.name, image: activeConv.participant?.profileImage }} />
+                            <span className="font-bold text-xs text-foreground truncate">
+                              {activeConv.participant?.name || 'User'}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      <button
+                        onClick={() => {
+                          setMessagingDrawerOpen(false)
+                        }}
+                        className="p-1 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer transition-colors shrink-0"
+                        title="Close Quick Chat"
+                      >
+                        <X className="size-4" />
+                      </button>
+                    </div>
+                  )
+                })()
+              ) : (
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center gap-2">
+                    <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                      <MessageCircle className="size-4" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-xs text-foreground">Quick Chat</h4>
+                      <p className="text-[10px] text-muted-foreground">Active Messages & Conversations</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setMessagingDrawerOpen(false)
+                    }}
+                    className="p-1 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer transition-colors"
+                    title="Close Quick Chat"
+                  >
+                    <X className="size-4" />
+                  </button>
                 </div>
-                <div>
-                  <h4 className="font-bold text-xs text-foreground">Quick Chat</h4>
-                  <p className="text-[10px] text-muted-foreground">Active Messages & Conversations</p>
-                </div>
-              </div>
-              <button
-                onClick={() => {
-                  setMessagingDrawerOpen(false)
-                  setDrawerActiveChat(null)
-                }}
-                className="p-1 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer transition-colors"
-                title="Close chat"
-              >
-                <X className="size-4" />
-              </button>
+              )}
             </div>
 
             {/* Popover Content */}
@@ -2694,23 +2724,6 @@ export default function AgoraApp() {
                   const activeConv = conversationsList.find((c) => c.id === drawerActiveChat)
                   return activeConv ? (
                     <>
-                      {/* Thread Header */}
-                      <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/20">
-                        <button
-                          onClick={() => setDrawerActiveChat(null)}
-                          className="flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline cursor-pointer"
-                        >
-                          <ArrowLeft className="size-3.5" />
-                          <span>All Chats</span>
-                        </button>
-                        <div className="flex items-center gap-2 overflow-hidden">
-                          <Avatar person={{ name: activeConv.participant?.name, image: activeConv.participant?.profileImage }} />
-                          <span className="font-bold text-xs text-foreground truncate max-w-[120px]">
-                            {activeConv.participant?.name || 'User'}
-                          </span>
-                        </div>
-                      </div>
-
                       {/* Chat Messages Body */}
                       <div className="flex-1 overflow-y-auto p-3.5 space-y-2 bg-slate-50/50 dark:bg-slate-950/20">
                         {drawerChatHistory.map((msg) => {
