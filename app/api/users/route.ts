@@ -5,6 +5,10 @@ import { Block } from '@/lib/db/models/Block'
 import { ConnectionRequest } from '@/lib/db/models/ConnectionRequest'
 import { getAuthFromRequest } from '@/lib/auth'
 
+function escapeRegex(str: string) {
+  return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
+}
+
 export async function GET(req: NextRequest) {
   try {
     await connectDB()
@@ -13,7 +17,7 @@ export async function GET(req: NextRequest) {
     const filter = searchParams.get('filter') || 'all'
     const country = searchParams.get('country') || 'Anywhere'
     const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10))
-    const limit = Math.max(1, Math.min(50, parseInt(searchParams.get('limit') || '20', 10)))
+    const limit = Math.max(1, Math.min(100, parseInt(searchParams.get('limit') || '100', 10)))
 
     const auth = getAuthFromRequest(req)
     const excludedIds: string[] = []
@@ -46,38 +50,66 @@ export async function GET(req: NextRequest) {
     }
 
     if (country && country !== 'Anywhere') {
-      mongoQuery.country = { $regex: new RegExp(country, 'i') }
+      const escapedCountry = escapeRegex(country.trim())
+      mongoQuery.country = { $regex: new RegExp(escapedCountry, 'i') }
     }
 
-    if (filter === 'match' && auth?.userId) {
+    if (auth?.userId) {
       const currentUser = await User.findById(auth.userId)
       if (currentUser) {
-        const learns = currentUser.skillsToLearn || []
-        const teaches = currentUser.skillsToTeach || []
-        mongoQuery.$or = [
-          { skillsToTeach: { $in: learns.map((s: string) => new RegExp(`^${s}$`, 'i')) } },
-          { skillsToLearn: { $in: teaches.map((s: string) => new RegExp(`^${s}$`, 'i')) } },
-        ]
+        const learns = (currentUser.skillsToLearn || []).map((s: string) => s.trim()).filter(Boolean)
+        const teaches = (currentUser.skillsToTeach || []).map((s: string) => s.trim()).filter(Boolean)
+
+        if (filter === 'match') {
+          const matchConditions: any[] = []
+          if (learns.length > 0) {
+            matchConditions.push({ skillsToTeach: { $in: learns.map((s: string) => new RegExp(`^${escapeRegex(s)}$`, 'i')) } })
+          }
+          if (teaches.length > 0) {
+            matchConditions.push({ skillsToLearn: { $in: teaches.map((s: string) => new RegExp(`^${escapeRegex(s)}$`, 'i')) } })
+          }
+          if (matchConditions.length > 0) {
+            mongoQuery.$or = matchConditions
+          } else {
+            // Current user has no skills listed -> no matches
+            mongoQuery._id = { $in: [] }
+          }
+        } else if (filter === 'teach') {
+          // Available to Teach: Members who want to learn what currentUser can teach
+          if (teaches.length > 0) {
+            mongoQuery.skillsToLearn = { $in: teaches.map((s: string) => new RegExp(`^${escapeRegex(s)}$`, 'i')) }
+          } else {
+            mongoQuery._id = { $in: [] }
+          }
+        } else if (filter === 'learn') {
+          // Looking to Learn: Members who can teach what currentUser wants to learn
+          if (learns.length > 0) {
+            mongoQuery.skillsToTeach = { $in: learns.map((s: string) => new RegExp(`^${escapeRegex(s)}$`, 'i')) }
+          } else {
+            mongoQuery._id = { $in: [] }
+          }
+        }
       }
     }
 
     if (q) {
-      const searchRegex = new RegExp(q, 'i')
-      if (filter === 'teach') {
-        // User can teach skill Q -> find members who want to learn skill Q
-        mongoQuery.skillsToLearn = { $elemMatch: { $regex: searchRegex } }
-      } else if (filter === 'learn') {
-        // User wants to learn skill Q -> find members who can teach skill Q
-        mongoQuery.skillsToTeach = { $elemMatch: { $regex: searchRegex } }
-      } else if (filter !== 'match') {
-        mongoQuery.$or = [
-          { name: searchRegex },
-          { username: searchRegex },
-          { bio: searchRegex },
-          { country: searchRegex },
-          { skillsToTeach: { $elemMatch: { $regex: searchRegex } } },
-          { skillsToLearn: { $elemMatch: { $regex: searchRegex } } },
+      const searchRegex = new RegExp(escapeRegex(q), 'i')
+      const searchOr = [
+        { name: searchRegex },
+        { username: searchRegex },
+        { bio: searchRegex },
+        { country: searchRegex },
+        { skillsToTeach: { $elemMatch: { $regex: searchRegex } } },
+        { skillsToLearn: { $elemMatch: { $regex: searchRegex } } },
+      ]
+      if (mongoQuery.$or) {
+        mongoQuery.$and = [
+          { $or: mongoQuery.$or },
+          { $or: searchOr }
         ]
+        delete mongoQuery.$or
+      } else {
+        mongoQuery.$or = searchOr
       }
     }
 

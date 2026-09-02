@@ -344,6 +344,35 @@ export default function AgoraApp() {
   }, [auth, me.id])
 
   useEffect(() => {
+    if (auth !== 'logged') return
+    const controller = new AbortController()
+    async function fetchFilteredUsers() {
+      try {
+        const params = new URLSearchParams()
+        params.set('filter', filter)
+        params.set('country', country)
+        if (query.trim()) params.set('q', query.trim())
+        params.set('limit', '100')
+
+        const res = await fetch(`/api/users?${params.toString()}`, { signal: controller.signal })
+        if (res.ok) {
+          const data = await res.json()
+          const users = data.people || data.users
+          if (users) {
+            setPeopleList(users)
+          }
+        }
+      } catch (err: any) {
+        if (err.name !== 'AbortError') {
+          // ignore
+        }
+      }
+    }
+    fetchFilteredUsers()
+    return () => controller.abort()
+  }, [auth, filter, country, query])
+
+  useEffect(() => {
     async function loadConversations() {
       if (auth !== 'logged') return
       try {
@@ -465,7 +494,12 @@ export default function AgoraApp() {
       if (p.id === me.id) return false
       if (blockedUserIds.has(p.id)) return false
       if (connectedPartnerIds.has(p.id)) return false
-      if (country !== 'Anywhere' && p.location !== country) return false
+
+      if (country && country !== 'Anywhere') {
+        const targetCountry = country.trim().toLowerCase()
+        const userLocation = (p.location || '').trim().toLowerCase()
+        if (userLocation !== targetCountry && !userLocation.includes(targetCountry)) return false
+      }
 
       if (query.trim()) {
         const q = query.toLowerCase()
@@ -479,12 +513,27 @@ export default function AgoraApp() {
         if (!textMatch && !teachMatch && !learnMatch) return false
       }
 
-      if (filter === 'teach') return p.teaches.length > 0
-      if (filter === 'learn') return p.learns.length > 0
+      if (filter === 'teach') {
+        // Available to Teach: Members who want to learn what I can teach
+        if (!me.teaches || me.teaches.length === 0) return false
+        return p.learns.some((wantedSkill) =>
+          me.teaches.some((mySkill) => mySkill.trim().toLowerCase() === wantedSkill.trim().toLowerCase())
+        )
+      }
+
+      if (filter === 'learn') {
+        // Looking to Learn: Members who can teach what I want to learn
+        if (!me.learns || me.learns.length === 0) return false
+        return p.teaches.some((offeredSkill) =>
+          me.learns.some((myWantedSkill) => myWantedSkill.trim().toLowerCase() === offeredSkill.trim().toLowerCase())
+        )
+      }
+
       if (filter === 'match') {
         const score = getMatchScore(me, p)
         return score > 0
       }
+
       return true
     })
 
@@ -1935,9 +1984,15 @@ export default function AgoraApp() {
                   })}
 
                   {shown.length === 0 && (
-                    <div className="bg-card rounded-xl border border-border p-12 text-center col-span-2">
+                    <div className="bg-card rounded-xl border border-border p-12 text-center col-span-2 space-y-2">
                       <p className="text-sm font-semibold">No member profiles found</p>
-                      <p className="mt-1 text-xs text-muted-foreground">Try tweaking your discovery filters or locations selection.</p>
+                      {filter === 'teach' && (!me.teaches || me.teaches.length === 0) ? (
+                        <p className="text-xs text-muted-foreground">You haven't listed any skills under "Skills I can teach" in your profile. Add skills to your profile to find members interested in learning from you.</p>
+                      ) : filter === 'learn' && (!me.learns || me.learns.length === 0) ? (
+                        <p className="text-xs text-muted-foreground">You haven't listed any skills under "Skills I want to learn" in your profile. Add skills to your profile to find members who can teach you.</p>
+                      ) : (
+                        <p className="text-xs text-muted-foreground">Try tweaking your discovery filters or location selection.</p>
+                      )}
                     </div>
                   )}
                 </div>
