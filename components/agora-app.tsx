@@ -143,6 +143,8 @@ export default function AgoraApp() {
   const [drawerChatMessage, setDrawerChatMessage] = useState('')
   const dropdownRef = useRef<HTMLDivElement>(null)
   const quickChatRef = useRef<HTMLDivElement>(null)
+  const pageDropdownRef = useRef<HTMLDivElement>(null)
+  const [pageDropdownOpen, setPageDropdownOpen] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
@@ -171,6 +173,9 @@ export default function AgoraApp() {
       }
       if (quickChatRef.current && !quickChatRef.current.contains(event.target as Node)) {
         setMessagingDrawerOpen(false)
+      }
+      if (pageDropdownRef.current && !pageDropdownRef.current.contains(event.target as Node)) {
+        setPageDropdownOpen(false)
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -1932,25 +1937,36 @@ export default function AgoraApp() {
                         <ChevronLeft className="size-4" />
                       </button>
 
-                      <div className="relative">
-                        <select
-                          value={currentPage}
-                          onChange={(e) => {
-                            const val = Number(e.target.value)
-                            if (val) {
-                              setCurrentPage(val)
-                              window.scrollTo({ top: 0, behavior: 'smooth' })
-                            }
-                          }}
-                          className="appearance-none h-8 pl-3 pr-7 rounded-xl bg-card border border-border text-xs font-bold text-foreground shadow-3xs cursor-pointer outline-none focus:ring-1 focus:ring-primary/40 transition-all"
+                      <div className="relative" ref={pageDropdownRef}>
+                        <button
+                          onClick={() => setPageDropdownOpen(!pageDropdownOpen)}
+                          className="flex h-8 items-center justify-between gap-2 px-3 rounded-xl bg-card border border-border text-xs font-bold text-foreground shadow-3xs cursor-pointer hover:bg-muted/50 transition-colors"
                         >
-                          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                            <option key={p} value={p}>
-                              {p}
-                            </option>
-                          ))}
-                        </select>
-                        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
+                          <span>{currentPage}</span>
+                          <ChevronDown className={`size-3.5 text-muted-foreground transition-transform duration-200 ${pageDropdownOpen ? 'rotate-180' : ''}`} />
+                        </button>
+                        
+                        {pageDropdownOpen && (
+                          <div className="absolute left-1/2 -translate-x-1/2 top-full z-50 mt-1.5 w-16 max-h-48 overflow-y-auto rounded-lg border border-border bg-card p-1 shadow-lg animate-in fade-in slide-in-from-top-1 duration-100">
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                              <button
+                                key={p}
+                                onClick={() => {
+                                  setCurrentPage(p)
+                                  setPageDropdownOpen(false)
+                                  window.scrollTo({ top: 0, behavior: 'smooth' })
+                                }}
+                                className={`w-full text-center py-1.5 mb-0.5 text-xs rounded-md transition-colors cursor-pointer last:mb-0 ${
+                                  currentPage === p
+                                    ? 'bg-primary text-primary-foreground font-semibold'
+                                    : 'text-foreground hover:bg-muted font-medium'
+                                }`}
+                              >
+                                {p}
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </div>
 
                       <button
