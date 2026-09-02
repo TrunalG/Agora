@@ -81,12 +81,26 @@ export default function AgoraApp() {
       window.history.replaceState({ view: newView }, '', url)
     }
   }
+
+  const handleGoHome = () => {
+    navigateToView('Explore')
+    setCurrentPage(1)
+    setFilter('all')
+    setCountry('Anywhere')
+    setQuery('')
+    setSearchVal('')
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
   const [query, setQuery] = useState('')
   const [searchVal, setSearchVal] = useState('')
   const [searchChatQuery, setSearchChatQuery] = useState('')
   const [filter, setFilter] = useState<'all' | 'teach' | 'learn' | 'match'>('all')
   const [networkTab, setNetworkTab] = useState<'received' | 'sent' | 'connections'>('received')
   const [country, setCountry] = useState('Anywhere')
+  const [currentPage, setCurrentPage] = useState(1)
+  const ITEMS_PER_PAGE = 10
   const [profile, setProfile] = useState<Person | null>(null)
   const [auth, setAuth] = useState<'guest' | 'logged'>('guest')
   const [authMode, setAuthMode] = useState<'login' | 'register' | 'onboarding' | null>(null)
@@ -344,6 +358,10 @@ export default function AgoraApp() {
   }, [auth, me.id])
 
   useEffect(() => {
+    setCurrentPage(1)
+  }, [filter, country, query])
+
+  useEffect(() => {
     if (auth !== 'logged') return
     const controller = new AbortController()
     async function fetchFilteredUsers() {
@@ -540,6 +558,13 @@ export default function AgoraApp() {
     // Sort by match score descending to prioritize Strong Matches at the top of the grid
     return [...filtered].sort((a, b) => getMatchScore(me, b) - getMatchScore(me, a))
   }, [peopleList, me, query, filter, country, filteredConnections, blockedUserIds])
+
+  const totalPages = Math.ceil(shown.length / ITEMS_PER_PAGE) || 1
+
+  const paginatedShown = useMemo(() => {
+    const startIdx = (currentPage - 1) * ITEMS_PER_PAGE
+    return shown.slice(startIdx, startIdx + ITEMS_PER_PAGE)
+  }, [shown, currentPage])
 
   // Helper to check if follow request is pending
   const isRequestPending = (personId: string) => {
@@ -1543,7 +1568,7 @@ export default function AgoraApp() {
               <Menu className="size-5" />
             </button>
             
-            <button onClick={() => navigateToView('Explore')} className="flex items-center gap-2 group cursor-pointer">
+            <button onClick={handleGoHome} className="flex items-center gap-2 group cursor-pointer" title="Go to Home (Explore)">
               <span className="font-bold text-2xl tracking-tight text-primary">Agora</span>
             </button>
 
@@ -1879,12 +1904,19 @@ export default function AgoraApp() {
 
                 {/* Search Metadata Header */}
                 <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
-                  <span>Showing {shown.length} members based on filter preferences</span>
+                  <span>
+                    Showing {shown.length > 0 ? (currentPage - 1) * ITEMS_PER_PAGE + 1 : 0}–{Math.min(currentPage * ITEMS_PER_PAGE, shown.length)} of {shown.length} members based on filter preferences
+                  </span>
+                  {totalPages > 1 && (
+                    <span className="font-semibold text-foreground">
+                      Page {currentPage} of {totalPages}
+                    </span>
+                  )}
                 </div>
 
                 {/* Member Grid Layout (Diverges from LinkedIn stream) */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  {shown.map((person) => {
+                  {paginatedShown.map((person) => {
                     const matchScore = getMatchScore(me, person)
                     const isPending = isRequestPending(person.id)
 
@@ -1996,6 +2028,60 @@ export default function AgoraApp() {
                     </div>
                   )}
                 </div>
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-border pt-6 mt-6">
+                    <div className="text-xs text-muted-foreground">
+                      Showing page <span className="font-bold text-foreground">{currentPage}</span> of <span className="font-bold text-foreground">{totalPages}</span> ({shown.length} total members)
+                    </div>
+
+                    <div className="flex items-center gap-1.5 flex-wrap justify-center">
+                      <button
+                        onClick={() => {
+                          if (currentPage > 1) {
+                            setCurrentPage((p) => p - 1)
+                            window.scrollTo({ top: 0, behavior: 'smooth' })
+                          }
+                        }}
+                        disabled={currentPage === 1}
+                        className="px-3 py-1.5 rounded-lg border border-border bg-card text-xs font-semibold hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                      >
+                        Previous
+                      </button>
+
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                        <button
+                          key={pageNum}
+                          onClick={() => {
+                            setCurrentPage(pageNum)
+                            window.scrollTo({ top: 0, behavior: 'smooth' })
+                          }}
+                          className={`size-8 rounded-lg text-xs font-bold transition-all border cursor-pointer ${
+                            currentPage === pageNum
+                              ? 'bg-primary text-primary-foreground border-primary'
+                              : 'border-border bg-card text-foreground hover:bg-muted'
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      ))}
+
+                      <button
+                        onClick={() => {
+                          if (currentPage < totalPages) {
+                            setCurrentPage((p) => p + 1)
+                            window.scrollTo({ top: 0, behavior: 'smooth' })
+                          }
+                        }}
+                        disabled={currentPage === totalPages}
+                        className="px-3 py-1.5 rounded-lg border border-border bg-card text-xs font-semibold hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </div>
+                )}
               </section>
 
             </div>
