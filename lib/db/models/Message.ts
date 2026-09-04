@@ -6,6 +6,7 @@ export interface IMessage extends Document {
   senderId: mongoose.Types.ObjectId
   content: string
   readAt?: Date | null
+  isDeleted: boolean
   createdAt: Date
   updatedAt: Date
 }
@@ -16,6 +17,7 @@ const MessageSchema = new Schema<IMessage>(
     senderId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     content: { type: String, required: true },
     readAt: { type: Date, default: null },
+    isDeleted: { type: Boolean, default: false },
   },
   { timestamps: true }
 )

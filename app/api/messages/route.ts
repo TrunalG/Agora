@@ -34,8 +34,8 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Access denied to this conversation' }, { status: 403 })
     }
 
-    const total = await Message.countDocuments({ conversationId })
-    const messages = await Message.find({ conversationId })
+    const total = await Message.countDocuments({ conversationId, isDeleted: { $ne: true } })
+    const messages = await Message.find({ conversationId, isDeleted: { $ne: true } })
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
@@ -81,6 +81,30 @@ export async function POST(req: NextRequest) {
 
     await connectDB()
 
+    // Auto-Moderator Logic
+    const bannedWords = ['scam', 'spam', 'abuse', 'hate', 'slur', 'idiot', 'stupid', 'bitch'] // Basic blocklist
+    const lowerContent = content.toLowerCase()
+    const isToxic = bannedWords.some(w => lowerContent.includes(w))
+
+    if (isToxic) {
+      const senderUser = await User.findById(auth.userId)
+      if (senderUser) {
+        senderUser.warningCount = (senderUser.warningCount || 0) + 1
+        if (senderUser.warningCount >= 3) {
+          senderUser.status = 'blocked'
+        } else {
+          senderUser.status = 'warned'
+        }
+        await senderUser.save()
+        
+        if (senderUser.status === 'blocked') {
+          return NextResponse.json({ error: 'Account blocked due to multiple violations.' }, { status: 403 })
+        } else {
+          return NextResponse.json({ error: `Warning: Inappropriate language detected. You have ${3 - senderUser.warningCount} warnings left.` }, { status: 400 })
+        }
+      }
+    }
+
     const conversation = await Conversation.findById(conversationId)
     if (!conversation) {
       return NextResponse.json({ error: 'Conversation not found' }, { status: 404 })
@@ -114,15 +138,16 @@ export async function POST(req: NextRequest) {
     await conversation.save()
 
     if (recipientId) {
-      const recipient = await User.findById(recipientId)
-      if (recipient && recipient.notificationPreference) {
-        await Notification.create({
-          recipientId: recipient._id,
-          type: 'new_message',
-          referenceId: conversationId,
-          read: false,
-        })
-      }
+      User.findById(recipientId).then((recipient) => {
+        if (recipient && recipient.notificationPreference) {
+          Notification.create({
+            recipientId: recipient._id,
+            type: 'new_message',
+            referenceId: conversationId,
+            read: false,
+          }).catch(() => {})
+        }
+      }).catch(() => {})
     }
 
     return NextResponse.json({
@@ -164,5 +189,39 @@ export async function PATCH(req: NextRequest) {
   } catch (error: any) {
     console.error('Mark messages read error:', error)
     return NextResponse.json({ error: 'Failed to mark messages read' }, { status: 500 })
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const auth = getAuthFromRequest(req)
+    if (!auth) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { searchParams } = new URL(req.url)
+    const messageId = searchParams.get('messageId')
+    
+    if (!messageId) {
+      return NextResponse.json({ error: 'messageId is required' }, { status: 400 })
+    }
+
+    await connectDB()
+
+    const message = await Message.findById(messageId)
+    if (!message) {
+      return NextResponse.json({ error: 'Message not found' }, { status: 404 })
+    }
+
+    if (message.senderId.toString() !== auth.userId) {
+      return NextResponse.json({ error: "Cannot delete someone else's message" }, { status: 403 })
+    }
+
+    await Message.findByIdAndDelete(messageId)
+
+    return NextResponse.json({ message: 'Message deleted successfully' })
+  } catch (error: any) {
+    console.error('Delete message error:', error)
+    return NextResponse.json({ error: 'Failed to delete message' }, { status: 500 })
   }
 }

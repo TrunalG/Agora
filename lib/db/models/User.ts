@@ -19,6 +19,9 @@ export interface IUser extends Document {
   notificationPreference: boolean
   appearancePreference: 'light' | 'dark' | 'system'
   onboarded: boolean
+  role: 'user' | 'admin'
+  status: 'active' | 'warned' | 'blocked'
+  warningCount: number
   createdAt: Date
   updatedAt: Date
 }
@@ -46,6 +49,9 @@ const UserSchema = new Schema<IUser>(
     notificationPreference: { type: Boolean, default: true },
     appearancePreference: { type: String, enum: ['light', 'dark', 'system'], default: 'system' },
     onboarded: { type: Boolean, default: false },
+    role: { type: String, enum: ['user', 'admin'], default: 'user' },
+    status: { type: String, enum: ['active', 'warned', 'blocked'], default: 'active' },
+    warningCount: { type: Number, default: 0 },
   },
   { timestamps: true }
 )

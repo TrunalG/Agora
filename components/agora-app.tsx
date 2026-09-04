@@ -17,6 +17,7 @@ import {
   Send,
   Settings,
   Shield,
+  ShieldCheck,
   UserRound,
   Users,
   X,
@@ -116,6 +117,8 @@ export default function AgoraApp() {
   const [outgoingRequests, setOutgoingRequests] = useState<Array<{ id: string; senderId: string; sender: any; receiverId: string; receiver: any; message: string; status: string; createdAt: string }>>([])
   const [conversationsList, setConversationsList] = useState<Array<{ id: string; participant: any; lastMessage: any; unreadCount: number; updatedAt: string }>>([])
   const [chatHistory, setChatHistory] = useState<Array<{ id: string; conversationId: string; senderId: string; content: string; createdAt: string }>>([])
+  
+  const [contextMenuMsgId, setContextMenuMsgId] = useState<string | null>(null)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [me, setMe] = useState<Person>(defaultGuest)
   const [myProfileData, setMyProfileData] = useState({
@@ -145,6 +148,35 @@ export default function AgoraApp() {
   const quickChatRef = useRef<HTMLDivElement>(null)
   const pageDropdownRef = useRef<HTMLDivElement>(null)
   const [pageDropdownOpen, setPageDropdownOpen] = useState(false)
+  const touchTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const isLongPressRef = useRef(false)
+
+  const handleMsgTouchStart = (msgId: string, isMe: boolean) => {
+    if (!isMe) return
+    isLongPressRef.current = false
+    if (touchTimerRef.current) clearTimeout(touchTimerRef.current)
+    touchTimerRef.current = setTimeout(() => {
+      isLongPressRef.current = true
+      setContextMenuMsgId(msgId)
+      if (typeof window !== 'undefined' && window.navigator && window.navigator.vibrate) {
+        window.navigator.vibrate(40)
+      }
+    }, 500)
+  }
+
+  const handleMsgTouchEnd = () => {
+    if (touchTimerRef.current) {
+      clearTimeout(touchTimerRef.current)
+      touchTimerRef.current = null
+    }
+  }
+
+  const handleMsgTouchMove = () => {
+    if (touchTimerRef.current) {
+      clearTimeout(touchTimerRef.current)
+      touchTimerRef.current = null
+    }
+  }
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
@@ -241,6 +273,10 @@ export default function AgoraApp() {
     })
   }
 
+  const [isCheckingSession, setIsCheckingSession] = useState(true)
+  const [isSendingMsg, setIsSendingMsg] = useState(false)
+  const [isSendingDrawerMsg, setIsSendingDrawerMsg] = useState(false)
+
   useEffect(() => {
     async function initSession() {
       try {
@@ -254,6 +290,8 @@ export default function AgoraApp() {
         }
       } catch {
         // Guest fallback
+      } finally {
+        setIsCheckingSession(false)
       }
     }
     initSession()
@@ -415,7 +453,7 @@ export default function AgoraApp() {
       }
     }
     loadConversations()
-    const interval = setInterval(loadConversations, 10000)
+    const interval = setInterval(loadConversations, 3000)
     return () => clearInterval(interval)
   }, [auth])
 
@@ -429,9 +467,10 @@ export default function AgoraApp() {
         const res = await fetch(`/api/messages?conversationId=${drawerActiveChat}`)
         if (res.ok) {
           const data = await res.json()
-          setDrawerChatHistory(data.messages || [])
+          const msgs = (data.messages || []).filter((m: any, idx: number, self: any[]) => self.findIndex((t: any) => t.id === m.id) === idx)
+          setDrawerChatHistory(msgs)
 
-          const hasUnread = data.messages?.some((msg: any) => msg.senderId !== me.id && !msg.readAt)
+          const hasUnread = msgs.some((msg: any) => msg.senderId !== me.id && !msg.readAt)
           if (hasUnread) {
             await fetch('/api/messages', {
               method: 'PATCH',
@@ -451,7 +490,7 @@ export default function AgoraApp() {
     }
     loadDrawerChatMessages()
     if (drawerActiveChat) {
-      const interval = setInterval(loadDrawerChatMessages, 4000)
+      const interval = setInterval(loadDrawerChatMessages, 1200)
       return () => clearInterval(interval)
     }
   }, [drawerActiveChat, me.id])
@@ -463,7 +502,8 @@ export default function AgoraApp() {
         const res = await fetch(`/api/messages?conversationId=${activeChat}`)
         if (res.ok) {
           const data = await res.json()
-          setChatHistory(data.messages || [])
+          const msgs = (data.messages || []).filter((m: any, idx: number, self: any[]) => self.findIndex((t: any) => t.id === m.id) === idx)
+          setChatHistory(msgs)
 
           const hasUnread = data.messages?.some((msg: any) => msg.senderId !== me.id && !msg.readAt)
           if (hasUnread) {
@@ -485,7 +525,7 @@ export default function AgoraApp() {
     }
     loadChatMessages()
     if (activeChat) {
-      const interval = setInterval(loadChatMessages, 4000)
+      const interval = setInterval(loadChatMessages, 1200)
       return () => clearInterval(interval)
     }
   }, [activeChat, me.id])
@@ -810,29 +850,61 @@ export default function AgoraApp() {
   }
 
   async function sendMessage() {
-    if (!activeChat || !chatMessage.trim()) return
+    if (!activeChat || !chatMessage.trim() || isSendingMsg) return
+    const content = chatMessage.trim()
+    const tempId = `temp-${Date.now()}`
+    const tempMessage = {
+      id: tempId,
+      conversationId: activeChat,
+      senderId: me.id,
+      content,
+      createdAt: new Date().toISOString(),
+    }
+
+    setChatMessage('')
+    setIsSendingMsg(true)
+    setChatHistory((prev) => [...prev, tempMessage])
+
     try {
       const res = await fetch('/api/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ conversationId: activeChat, content: chatMessage }),
+        body: JSON.stringify({ conversationId: activeChat, content }),
       })
       if (res.ok) {
-        setChatMessage('')
         const data = await res.json()
-        setChatHistory((prev) => [...prev, data.message])
+        setChatHistory((prev) =>
+          prev.map((m) => (m.id === tempId ? data.message : m))
+        )
       } else {
+        setChatHistory((prev) => prev.filter((m) => m.id !== tempId))
         const data = await res.json()
         notify(data.error || 'Failed to send message')
       }
     } catch {
+      setChatHistory((prev) => prev.filter((m) => m.id !== tempId))
       notify('Network error')
+    } finally {
+      setIsSendingMsg(false)
     }
   }
 
   async function sendDrawerMessage() {
-    if (!drawerActiveChat || !drawerChatMessage.trim()) return
+    if (!drawerActiveChat || !drawerChatMessage.trim() || isSendingDrawerMsg) return
     const content = drawerChatMessage.trim()
+    const tempId = `temp-drawer-${Date.now()}`
+    const tempMessage = {
+      id: tempId,
+      conversationId: drawerActiveChat,
+      senderId: me.id,
+      content,
+      createdAt: new Date().toISOString(),
+    }
+
+    setDrawerChatMessage('')
+    setIsSendingDrawerMsg(true)
+    setDrawerChatHistory((prev) => [...prev, tempMessage])
+
     try {
       const res = await fetch('/api/messages', {
         method: 'POST',
@@ -840,17 +912,54 @@ export default function AgoraApp() {
         body: JSON.stringify({ conversationId: drawerActiveChat, content }),
       })
       if (res.ok) {
-        setDrawerChatMessage('')
         const data = await res.json()
-        setDrawerChatHistory((prev) => [...prev, data.message])
-        const convRes = await fetch('/api/conversations')
-        if (convRes.ok) {
-          const convData = await convRes.json()
-          setConversationsList(convData.conversations || [])
-        }
+        setDrawerChatHistory((prev) =>
+          prev.map((m) => (m.id === tempId ? data.message : m))
+        )
+        fetch('/api/conversations')
+          .then((r) => r.json())
+          .then((d) => setConversationsList(d.conversations || []))
+          .catch(() => {})
       } else {
+        setDrawerChatHistory((prev) => prev.filter((m) => m.id !== tempId))
         const data = await res.json()
         notify(data.error || 'Failed to send message')
+      }
+    } catch {
+      setDrawerChatHistory((prev) => prev.filter((m) => m.id !== tempId))
+      notify('Network error')
+    } finally {
+      setIsSendingDrawerMsg(false)
+    }
+  }
+
+  async function handleDeleteMessage(messageId: string) {
+    try {
+      const res = await fetch(`/api/messages?messageId=${messageId}`, { method: 'DELETE' })
+      if (res.ok) {
+        setChatHistory((prev) => prev.filter((m) => m.id !== messageId))
+        setDrawerChatHistory((prev) => prev.filter((m) => m.id !== messageId))
+        setContextMenuMsgId(null)
+      } else {
+        const data = await res.json()
+        notify(data.error || 'Failed to delete message')
+      }
+    } catch {
+      notify('Network error')
+    }
+  }
+
+  async function handleMakeMeAdmin() {
+    try {
+      const res = await fetch('/api/admin/make-me-admin', { method: 'POST' })
+      const data = await res.json()
+      if (res.ok) {
+        notify('Success! You are now an Admin. Opening Admin Panel...')
+        setTimeout(() => {
+          window.location.href = '/admin'
+        }, 1000)
+      } else {
+        notify(data.error || 'Failed to activate admin')
       }
     } catch {
       notify('Network error')
@@ -1106,6 +1215,19 @@ export default function AgoraApp() {
       setInlineLoading(false)
       setInlineError(err.message || 'Server connection error')
     }
+  }
+
+  if (isCheckingSession) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
+        <div className="flex flex-col items-center gap-3 animate-in fade-in duration-300">
+          <div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary animate-pulse">
+            <span className="font-extrabold text-xl tracking-tight">A</span>
+          </div>
+          <p className="text-xs font-semibold text-muted-foreground animate-pulse">Loading Agora...</p>
+        </div>
+      </div>
+    )
   }
 
   if (auth === 'guest') {
@@ -1699,6 +1821,23 @@ export default function AgoraApp() {
                         </button>
                       </div>
 
+                      {/* Admin Options */}
+                      <div className="pt-2 border-t border-border space-y-1.5 text-xs text-foreground font-semibold">
+                        <p className="text-muted-foreground font-normal text-[10px]">Admin Controls</p>
+                        <button
+                          onClick={handleMakeMeAdmin}
+                          className="w-full text-left py-1 text-xs text-primary font-bold hover:underline flex items-center gap-2"
+                        >
+                          <ShieldCheck className="size-3.5 text-primary" /> Activate Admin Access
+                        </button>
+                        <a
+                          href="/admin"
+                          className="w-full text-left py-1 text-xs text-muted-foreground hover:underline flex items-center gap-2"
+                        >
+                          <Shield className="size-3.5 text-muted-foreground" /> Open Admin Panel (/admin)
+                        </a>
+                      </div>
+
                       {/* Sign Out */}
                       <div className="pt-2 border-t border-border space-y-1.5 text-xs text-foreground font-semibold">
                         <button
@@ -2023,8 +2162,8 @@ export default function AgoraApp() {
                               <div className="text-[11px] leading-relaxed">
                                 <span className="text-muted-foreground font-semibold block text-[10px] uppercase tracking-wider mb-1">Teaches</span>
                                 <div className="flex flex-wrap gap-1">
-                                  {person.teaches.slice(0, 3).map((s) => (
-                                    <Chip key={s}>{s}</Chip>
+                                  {person.teaches.slice(0, 3).map((s, idx) => (
+                                    <Chip key={`teach-${s}-${idx}`}>{s}</Chip>
                                   ))}
                                 </div>
                               </div>
@@ -2033,8 +2172,8 @@ export default function AgoraApp() {
                               <div className="text-[11px] leading-relaxed">
                                 <span className="text-muted-foreground font-semibold block text-[10px] uppercase tracking-wider mb-1">Wants to Learn</span>
                                 <div className="flex flex-wrap gap-1">
-                                  {person.learns.slice(0, 3).map((s) => (
-                                    <Chip key={s} muted>{s}</Chip>
+                                  {person.learns.slice(0, 3).map((s, idx) => (
+                                    <Chip key={`learn-${s}-${idx}`} muted>{s}</Chip>
                                   ))}
                                 </div>
                               </div>
@@ -2445,19 +2584,66 @@ export default function AgoraApp() {
                       })()}
 
                       {/* Messages History */}
-                      <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-3.5 bg-slate-50/30 dark:bg-slate-900/5">
-                        {chatHistory.map((msg) => {
+                      <div onClick={() => setContextMenuMsgId(null)} className="flex-1 overflow-y-auto p-5 flex flex-col gap-3.5 bg-slate-50/30 dark:bg-slate-900/5">
+                        {chatHistory.map((msg, idx) => {
                           const isMe = msg.senderId === me.id
                           return (
-                            <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                            <div key={`${msg.id}-${idx}`} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                               <div
-                                className={`max-w-[70%] rounded-xl px-4 py-2 text-xs leading-relaxed shadow-2xs ${
+                                className={`relative max-w-[80%] sm:max-w-[70%] rounded-xl px-4 py-2.5 text-xs leading-relaxed shadow-2xs ${
                                   isMe
-                                    ? 'bg-primary text-primary-foreground rounded-br-none'
+                                    ? 'bg-primary text-primary-foreground rounded-br-none cursor-pointer active:opacity-95 transition-opacity select-none'
                                     : 'bg-card text-foreground border border-border rounded-bl-none'
                                 }`}
+                                onClick={(e) => {
+                                  if (isMe) {
+                                    e.stopPropagation()
+                                    if (isLongPressRef.current) {
+                                      isLongPressRef.current = false
+                                      return
+                                    }
+                                  }
+                                }}
+                                onContextMenu={(e) => {
+                                  if (isMe) {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                    setContextMenuMsgId(msg.id)
+                                  }
+                                }}
+                                onTouchStart={() => handleMsgTouchStart(msg.id, isMe)}
+                                onTouchEnd={handleMsgTouchEnd}
+                                onTouchMove={handleMsgTouchMove}
                               >
                                 {msg.content}
+                                {contextMenuMsgId === msg.id && isMe && (
+                                  <div 
+                                    className="absolute right-0 top-full mt-1 z-50 min-w-[130px] rounded-xl border border-border bg-popover text-popover-foreground p-1 shadow-lg animate-in fade-in zoom-in-95 duration-100"
+                                    onClick={(e) => {
+                                      e.preventDefault()
+                                      e.stopPropagation()
+                                    }}
+                                  >
+                                    <button
+                                      onClick={(e) => {
+                                        e.preventDefault()
+                                        e.stopPropagation()
+                                        setContextMenuMsgId(null)
+                                        handleDeleteMessage(msg.id)
+                                      }}
+                                      onTouchEnd={(e) => {
+                                        e.preventDefault()
+                                        e.stopPropagation()
+                                        setContextMenuMsgId(null)
+                                        handleDeleteMessage(msg.id)
+                                      }}
+                                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-destructive hover:bg-destructive/10 active:bg-destructive/20 cursor-pointer transition-colors"
+                                    >
+                                      <Trash2 className="size-3.5" />
+                                      <span>Delete</span>
+                                    </button>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           )
@@ -2751,24 +2937,71 @@ export default function AgoraApp() {
                   return activeConv ? (
                     <>
                       {/* Chat Messages Body */}
-                      <div className="flex-1 overflow-y-auto p-3.5 space-y-2 bg-slate-50/50 dark:bg-slate-950/20">
-                        {drawerChatHistory.map((msg) => {
+                      <div onClick={() => setContextMenuMsgId(null)} className="flex-1 overflow-y-auto p-3.5 space-y-2 bg-slate-50/50 dark:bg-slate-950/20">
+                        {drawerChatHistory.map((msg, idx) => {
                           const isMe = msg.senderId === me.id
                           return (
                             <div
-                              key={msg.id}
-                              className={`flex flex-col max-w-[85%] ${
-                                isMe ? 'ml-auto items-end' : 'mr-auto items-start'
+                              key={`drawer-${msg.id}-${idx}`}
+                              className={`flex max-w-[85%] ${
+                                isMe ? 'ml-auto justify-end' : 'mr-auto justify-start'
                               }`}
                             >
                               <div
-                                className={`rounded-xl px-3 py-2 text-xs leading-relaxed ${
+                                className={`relative rounded-xl px-3.5 py-2.5 text-xs leading-relaxed ${
                                   isMe
-                                    ? 'bg-primary text-primary-foreground font-medium rounded-br-xs shadow-xs'
+                                    ? 'bg-primary text-primary-foreground font-medium rounded-br-xs shadow-xs cursor-pointer active:opacity-95 transition-opacity select-none'
                                     : 'bg-card text-foreground rounded-bl-xs border border-border shadow-2xs'
                                 }`}
+                                onClick={(e) => {
+                                  if (isMe) {
+                                    e.stopPropagation()
+                                    if (isLongPressRef.current) {
+                                      isLongPressRef.current = false
+                                      return
+                                    }
+                                  }
+                                }}
+                                onContextMenu={(e) => {
+                                  if (isMe) {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                    setContextMenuMsgId(msg.id)
+                                  }
+                                }}
+                                onTouchStart={() => handleMsgTouchStart(msg.id, isMe)}
+                                onTouchEnd={handleMsgTouchEnd}
+                                onTouchMove={handleMsgTouchMove}
                               >
                                 {msg.content}
+                                {contextMenuMsgId === msg.id && isMe && (
+                                  <div 
+                                    className="absolute right-0 top-full mt-1 z-50 min-w-[130px] rounded-xl border border-border bg-popover text-popover-foreground p-1 shadow-lg animate-in fade-in zoom-in-95 duration-100"
+                                    onClick={(e) => {
+                                      e.preventDefault()
+                                      e.stopPropagation()
+                                    }}
+                                  >
+                                    <button
+                                      onClick={(e) => {
+                                        e.preventDefault()
+                                        e.stopPropagation()
+                                        setContextMenuMsgId(null)
+                                        handleDeleteMessage(msg.id)
+                                      }}
+                                      onTouchEnd={(e) => {
+                                        e.preventDefault()
+                                        e.stopPropagation()
+                                        setContextMenuMsgId(null)
+                                        handleDeleteMessage(msg.id)
+                                      }}
+                                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-destructive hover:bg-destructive/10 active:bg-destructive/20 cursor-pointer transition-colors"
+                                    >
+                                      <Trash2 className="size-3.5" />
+                                      <span>Delete</span>
+                                    </button>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           )
@@ -2904,16 +3137,16 @@ export default function AgoraApp() {
                   <div className="space-y-1">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">Teaches</span>
                     <div className="flex flex-wrap gap-1">
-                      {target.teaches.map((s) => (
-                        <Chip key={s}>{s}</Chip>
+                      {target.teaches.map((s, idx) => (
+                        <Chip key={`modal-teach-${s}-${idx}`}>{s}</Chip>
                       ))}
                     </div>
                   </div>
                   <div className="space-y-1">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">Wants to Learn</span>
                     <div className="flex flex-wrap gap-1">
-                      {target.learns.map((s) => (
-                        <Chip key={s} muted>{s}</Chip>
+                      {target.learns.map((s, idx) => (
+                        <Chip key={`modal-learn-${s}-${idx}`} muted>{s}</Chip>
                       ))}
                     </div>
                   </div>
