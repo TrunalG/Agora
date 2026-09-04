@@ -125,6 +125,8 @@ const testimonials = [
 export default function LandingPage() {
   const router = useRouter()
   const [checkingSession, setCheckingSession] = useState(true)
+  const [loaderVisible, setLoaderVisible] = useState(true)
+  const [isEntering, setIsEntering] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false)
 
@@ -196,6 +198,8 @@ export default function LandingPage() {
         console.error('Session check failed:', err)
       } finally {
         setCheckingSession(false)
+        setIsEntering(true)
+        setTimeout(() => setLoaderVisible(false), 900)
       }
     }
     checkSession()
@@ -261,21 +265,33 @@ export default function LandingPage() {
 
   const isPerfectMatch = activeMatch.teaches === selectedLearn && activeMatch.learns === selectedTeach
 
-  if (checkingSession) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
-        <div className="flex flex-col items-center gap-4">
-          <div className="size-16 animate-spin" style={{ animationDuration: '3s' }}>
-            <img src="/bg-logo2.png" alt="Agora Logo" className="size-full object-contain" />
-          </div>
-          <p className="text-xs text-muted-foreground tracking-wider uppercase font-bold">Loading Agora...</p>
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans antialiased select-none">
+    <div className="relative min-h-screen bg-background text-foreground font-sans antialiased select-none overflow-x-hidden">
+      {/* Curtain Loading Overlay */}
+      {loaderVisible && (
+        <div
+          className={`fixed inset-0 z-50 flex items-center justify-center bg-background text-foreground transition-transform duration-800 ${
+            !checkingSession ? '-translate-y-full' : 'translate-y-0'
+          }`}
+          style={{ transitionTimingFunction: 'cubic-bezier(0.76, 0, 0.24, 1)' }}
+        >
+          <div className="flex flex-col items-center gap-4">
+            <div className="size-16 animate-spin" style={{ animationDuration: '3s' }}>
+              <img src="/bg-logo2.png" alt="Agora Logo" className="size-full object-contain" />
+            </div>
+            <p className="text-xs text-muted-foreground tracking-wider uppercase font-bold">Loading Agora...</p>
+          </div>
+        </div>
+      )}
+
+      {/* Main Content with Z-Axis Depth Scale Entrance */}
+      <div
+        className={`min-h-screen transition-all duration-1000 ease-out origin-center ${
+          checkingSession
+            ? 'scale-[0.94] opacity-0 blur-xs'
+            : 'scale-100 opacity-100 blur-none'
+        }`}
+      >
       <style>{`
         .reveal-on-scroll {
           opacity: 0;
@@ -984,15 +1000,7 @@ export default function LandingPage() {
           >
             {/* Modal Header */}
             <div className="flex items-center justify-between px-5 py-3 border-b border-border bg-card/95">
-              <div className="flex items-center gap-2.5">
-                <div className="flex size-7 items-center justify-center rounded-full bg-primary/10 text-primary">
-                  <Play className="size-3.5 fill-current ml-0.5" />
-                </div>
-                <div>
-                  <span className="text-sm font-bold text-foreground block leading-none">Agora Platform Tour</span>
-                  <span className="text-[10px] text-muted-foreground">42 second video overview</span>
-                </div>
-              </div>
+              <span className="text-sm font-bold text-foreground">Agora Platform Tour</span>
               <button
                 onClick={() => setIsVideoModalOpen(false)}
                 className="rounded-full p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors cursor-pointer"
@@ -1016,6 +1024,7 @@ export default function LandingPage() {
           </div>
         </div>
       )}
+      </div>
     </div>
   )
 }
