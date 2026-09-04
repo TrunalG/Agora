@@ -2587,10 +2587,11 @@ export default function AgoraApp() {
                       <div onClick={() => setContextMenuMsgId(null)} className="flex-1 overflow-y-auto p-5 flex flex-col gap-3.5 bg-slate-50/30 dark:bg-slate-900/5">
                         {chatHistory.map((msg, idx) => {
                           const isMe = msg.senderId === me.id
+                          const isMenuOpen = contextMenuMsgId === msg.id
                           return (
-                            <div key={`${msg.id}-${idx}`} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                            <div key={`${msg.id}-${idx}`} className={`relative ${isMenuOpen ? 'z-50' : 'z-0'} flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                               <div
-                                className={`relative max-w-[80%] sm:max-w-[70%] rounded-xl px-4 py-2.5 text-xs leading-relaxed shadow-2xs ${
+                                className={`relative ${isMenuOpen ? 'z-50' : ''} max-w-[80%] sm:max-w-[70%] rounded-xl px-4 py-2.5 text-xs leading-relaxed shadow-2xs ${
                                   isMe
                                     ? 'bg-primary text-primary-foreground rounded-br-none cursor-pointer active:opacity-95 transition-opacity select-none'
                                     : 'bg-card text-foreground border border-border rounded-bl-none'
@@ -2940,15 +2941,16 @@ export default function AgoraApp() {
                       <div onClick={() => setContextMenuMsgId(null)} className="flex-1 overflow-y-auto p-3.5 space-y-2 bg-slate-50/50 dark:bg-slate-950/20">
                         {drawerChatHistory.map((msg, idx) => {
                           const isMe = msg.senderId === me.id
+                          const isMenuOpen = contextMenuMsgId === msg.id
                           return (
                             <div
                               key={`drawer-${msg.id}-${idx}`}
-                              className={`flex max-w-[85%] ${
+                              className={`relative ${isMenuOpen ? 'z-50' : 'z-0'} flex max-w-[85%] ${
                                 isMe ? 'ml-auto justify-end' : 'mr-auto justify-start'
                               }`}
                             >
                               <div
-                                className={`relative rounded-xl px-3.5 py-2.5 text-xs leading-relaxed ${
+                                className={`relative ${isMenuOpen ? 'z-50' : ''} rounded-xl px-3.5 py-2.5 text-xs leading-relaxed ${
                                   isMe
                                     ? 'bg-primary text-primary-foreground font-medium rounded-br-xs shadow-xs cursor-pointer active:opacity-95 transition-opacity select-none'
                                     : 'bg-card text-foreground rounded-bl-xs border border-border shadow-2xs'
