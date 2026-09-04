@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { Bell, ChevronRight, Eye, EyeOff, KeyRound, Lock, Shield, User, ArrowLeft, Mail } from 'lucide-react'
+import { ConfirmModal } from '@/components/ConfirmModal'
 
 interface SettingsViewProps {
   me: any
@@ -17,6 +18,7 @@ export function SettingsView({ me, blocked, unblock, onDelete, onUpdateSettings 
   const [activeTab, setActiveTab] = useState<TabType>('account')
   const [notifOn, setNotifOn] = useState(true)
   const [showPassword, setShowPassword] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
 
   useEffect(() => {
     // Sync notification state from me object
@@ -119,13 +121,21 @@ export function SettingsView({ me, blocked, unblock, onDelete, onUpdateSettings 
               <h2 className="font-bold text-destructive text-sm tracking-tight">Account Deletion</h2>
               <p className="text-xs text-muted-foreground mt-1 leading-relaxed">Closing your account will permanently delete all connections, messages, and profile data. This action cannot be reversed.</p>
               <button
-                onClick={() => {
-                  if (window.confirm('Are you sure you want to permanently delete your account? This action cannot be undone.')) onDelete()
-                }}
+                onClick={() => setIsDeleteModalOpen(true)}
                 className="mt-4 rounded-lg border border-destructive/20 bg-destructive/5 px-4.5 py-2 text-xs font-bold text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
               >
                 Delete Account
               </button>
+
+              <ConfirmModal
+                isOpen={isDeleteModalOpen}
+                title="Delete Account Permanently"
+                description="Are you sure you want to permanently delete your account? All connections, messages, and profile data will be erased immediately. This action cannot be undone."
+                confirmText="Delete Account"
+                variant="danger"
+                onConfirm={onDelete}
+                onClose={() => setIsDeleteModalOpen(false)}
+              />
             </div>
           </div>
         )}

@@ -47,14 +47,17 @@ import {
 import { Avatar } from '@/components/Avatar'
 import { Chip } from '@/components/Chip'
 import { Modal } from '@/components/Modal'
+import { ConfirmModal } from '@/components/ConfirmModal'
 import { CustomSelect } from '@/components/CustomSelect'
+import { LoadingScreen } from '@/components/LoadingScreen'
+
 const ProfileView = dynamic(() => import('@/components/ProfileView').then((m) => m.ProfileView), {
-  loading: () => <div className="p-8 text-center text-xs text-muted-foreground animate-pulse">Loading Profile...</div>,
+  loading: () => <LoadingScreen label="Loading Profile..." fullScreen={false} />,
   ssr: false,
 })
 
 const SettingsView = dynamic(() => import('@/components/SettingsView').then((m) => m.SettingsView), {
-  loading: () => <div className="p-8 text-center text-xs text-muted-foreground animate-pulse">Loading Settings...</div>,
+  loading: () => <LoadingScreen label="Loading Settings..." fullScreen={false} />,
   ssr: false,
 })
 import { AuthModal, PasswordRequirements } from '@/components/AuthModal'
@@ -140,6 +143,19 @@ export default function AgoraApp() {
   const [connectionsCount, setConnectionsCount] = useState(0)
   const [activePartnerModal, setActivePartnerModal] = useState<Person | null>(null)
   const [meDropdownOpen, setMeDropdownOpen] = useState(false)
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean
+    title: string
+    description: string
+    confirmText?: string
+    variant?: 'danger' | 'warning' | 'primary'
+    onConfirm: () => void
+  }>({
+    isOpen: false,
+    title: '',
+    description: '',
+    onConfirm: () => {},
+  })
   const [messagingDrawerOpen, setMessagingDrawerOpen] = useState(false)
   const [drawerActiveChat, setDrawerActiveChat] = useState<string | null>(null)
   const [drawerChatHistory, setDrawerChatHistory] = useState<any[]>([])
@@ -333,6 +349,18 @@ export default function AgoraApp() {
       return () => window.removeEventListener('popstate', handlePopState)
     }
   }, [])
+
+  useEffect(() => {
+    if (view === 'Notifications' && auth === 'logged') {
+      setUnreadNotifCount(0)
+      setNotificationsList((prev) => prev.map((n) => ({ ...n, read: true })))
+      fetch('/api/notifications', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ markAllRead: true }),
+      }).catch(() => {})
+    }
+  }, [view, auth])
 
   async function loadUserData(skipUsers = false) {
     if (auth !== 'logged') return
@@ -1218,16 +1246,7 @@ export default function AgoraApp() {
   }
 
   if (isCheckingSession) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
-        <div className="flex flex-col items-center gap-3 animate-in fade-in duration-300">
-          <div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary animate-pulse">
-            <span className="font-extrabold text-xl tracking-tight">A</span>
-          </div>
-          <p className="text-xs font-semibold text-muted-foreground animate-pulse">Loading Agora...</p>
-        </div>
-      </div>
-    )
+    return <LoadingScreen label="Loading Agora..." fullScreen={true} />
   }
 
   if (auth === 'guest') {
@@ -2410,23 +2429,31 @@ export default function AgoraApp() {
                                 Message
                               </button>
                               <button
-                                onClick={async () => {
-                                  if (window.confirm(`Are you sure you want to remove connection with ${conn.partner?.name || conn.partner?.username}?`)) {
-                                    try {
-                                      const res = await fetch(`/api/connections/request?receiverId=${conn.partnerId}`, {
-                                        method: 'DELETE',
-                                      })
-                                      if (res.ok) {
-                                        notify('Connection removed')
-                                        loadUserData(true)
-                                      } else {
-                                        const d = await res.json()
-                                        notify(d.error || 'Failed to remove connection')
+                                onClick={() => {
+                                  const partnerName = conn.partner?.name || conn.partner?.username || 'user'
+                                  setConfirmModal({
+                                    isOpen: true,
+                                    title: 'Remove Connection',
+                                    description: `Are you sure you want to remove connection with ${partnerName}?`,
+                                    confirmText: 'Remove Connection',
+                                    variant: 'danger',
+                                    onConfirm: async () => {
+                                      try {
+                                        const res = await fetch(`/api/connections/request?receiverId=${conn.partnerId}`, {
+                                          method: 'DELETE',
+                                        })
+                                        if (res.ok) {
+                                          notify('Connection removed')
+                                          loadUserData(true)
+                                        } else {
+                                          const d = await res.json()
+                                          notify(d.error || 'Failed to remove connection')
+                                        }
+                                      } catch {
+                                        notify('Network error')
                                       }
-                                    } catch {
-                                      notify('Network error')
                                     }
-                                  }
+                                  })
                                 }}
                                 className="rounded-lg border border-border px-3.5 py-1.5 text-xs font-semibold hover:bg-muted text-foreground transition-colors cursor-pointer"
                               >
@@ -2548,30 +2575,38 @@ export default function AgoraApp() {
                             {/* Block User Button in Chat Header */}
                             {partner && (
                               <button
-                                onClick={async () => {
-                                  if (window.confirm(`Are you sure you want to block ${partner.name || partner.username}?`)) {
-                                    const targetId = partner.id || partner._id
-                                    setBlockedUsers((prev) => [...prev, { id: targetId, name: partner.name || '', username: partner.username || '' }])
-                                    setActiveChat(null)
-                                    try {
-                                      const res = await fetch('/api/user/block', {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({ targetUserId: targetId }),
-                                      })
-                                      if (res.ok) {
-                                        notify('User blocked')
-                                        loadUserData(true)
-                                      } else {
-                                        const d = await res.json()
-                                        notify(d.error || 'Failed to block user')
+                                onClick={() => {
+                                  const targetName = partner.name || partner.username || 'user'
+                                  const targetId = partner.id || partner._id
+                                  setConfirmModal({
+                                    isOpen: true,
+                                    title: 'Block User',
+                                    description: `Are you sure you want to block ${targetName}? They will no longer be able to message you.`,
+                                    confirmText: 'Block User',
+                                    variant: 'danger',
+                                    onConfirm: async () => {
+                                      setBlockedUsers((prev) => [...prev, { id: targetId, name: partner.name || '', username: partner.username || '' }])
+                                      setActiveChat(null)
+                                      try {
+                                        const res = await fetch('/api/user/block', {
+                                          method: 'POST',
+                                          headers: { 'Content-Type': 'application/json' },
+                                          body: JSON.stringify({ targetUserId: targetId }),
+                                        })
+                                        if (res.ok) {
+                                          notify('User blocked')
+                                          loadUserData(true)
+                                        } else {
+                                          const d = await res.json()
+                                          notify(d.error || 'Failed to block user')
+                                          setBlockedUsers((prev) => prev.filter((b) => b.id !== targetId))
+                                        }
+                                      } catch {
+                                        notify('Network error blocking user')
                                         setBlockedUsers((prev) => prev.filter((b) => b.id !== targetId))
                                       }
-                                    } catch {
-                                      notify('Network error blocking user')
-                                      setBlockedUsers((prev) => prev.filter((b) => b.id !== targetId))
                                     }
-                                  }
+                                  })
                                 }}
                                 className="p-2 rounded-lg border border-destructive/20 bg-destructive/5 text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
                                 title={`Block ${partner.name || partner.username}`}
@@ -3181,27 +3216,34 @@ export default function AgoraApp() {
                         Send Message
                       </button>
                       <button
-                        onClick={async () => {
-                          if (window.confirm(`Are you sure you want to block ${target.name}?`)) {
-                            try {
-                              const res = await fetch('/api/user/block', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ targetUserId: target.id }),
-                              })
-                              if (res.ok) {
-                                notify('User blocked')
-                                setProfile(null)
-                                setActivePartnerModal(null)
-                                loadUserData()
-                              } else {
-                                const d = await res.json()
-                                notify(d.error || 'Failed to block user')
+                        onClick={() => {
+                          setConfirmModal({
+                            isOpen: true,
+                            title: 'Block User',
+                            description: `Are you sure you want to block ${target.name}? They will no longer be able to message you or view your profile.`,
+                            confirmText: 'Block User',
+                            variant: 'danger',
+                            onConfirm: async () => {
+                              try {
+                                const res = await fetch('/api/user/block', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ targetUserId: target.id }),
+                                })
+                                if (res.ok) {
+                                  notify('User blocked')
+                                  setProfile(null)
+                                  setActivePartnerModal(null)
+                                  loadUserData()
+                                } else {
+                                  const d = await res.json()
+                                  notify(d.error || 'Failed to block user')
+                                }
+                              } catch {
+                                notify('Network error')
                               }
-                            } catch {
-                              notify('Network error')
                             }
-                          }
+                          })
                         }}
                         className="rounded-lg border border-destructive/20 bg-destructive/5 p-2 text-destructive hover:bg-destructive/10 transition-colors flex items-center justify-center cursor-pointer"
                         title={`Block ${target.name}`}
@@ -3242,6 +3284,17 @@ export default function AgoraApp() {
           notify={notify}
         />
       )}
+
+      {/* Global Confirmation Modal */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        description={confirmModal.description}
+        confirmText={confirmModal.confirmText || 'Confirm'}
+        variant={confirmModal.variant || 'primary'}
+        onConfirm={confirmModal.onConfirm}
+        onClose={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
+      />
 
       {/* Toast Notification */}
       {toast && (

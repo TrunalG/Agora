@@ -51,6 +51,7 @@ export function ProfileView({
   const [newLink, setNewLink] = useState('')
   const [selectedLearnSkill, setSelectedLearnSkill] = useState('')
   const [selectedTeachSkill, setSelectedTeachSkill] = useState('')
+  const [copiedLink, setCopiedLink] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Modals state
@@ -464,11 +465,12 @@ export function ProfileView({
                   onClick={() => {
                     const url = typeof window !== 'undefined' ? `${window.location.origin}/in/${form.username || 'user'}` : `https://agora.app/in/${form.username || 'user'}`
                     navigator.clipboard.writeText(url)
-                    alert('Copied profile link to clipboard!')
+                    setCopiedLink(true)
+                    setTimeout(() => setCopiedLink(false), 2000)
                   }}
                   className="text-[10px] font-bold text-primary hover:underline shrink-0"
                 >
-                  Copy
+                  {copiedLink ? 'Copied!' : 'Copy'}
                 </button>
               </div>
             </div>
