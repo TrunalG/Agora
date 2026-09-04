@@ -126,7 +126,7 @@ export default function LandingPage() {
   const router = useRouter()
   const [checkingSession, setCheckingSession] = useState(true)
   const [loaderVisible, setLoaderVisible] = useState(true)
-  const [isEntering, setIsEntering] = useState(false)
+  const [isEntranceFinished, setIsEntranceFinished] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false)
 
@@ -145,9 +145,13 @@ export default function LandingPage() {
       }
     }
     if (isVideoModalOpen) {
+      document.body.style.overflow = 'hidden'
       window.addEventListener('keydown', handleKeyDown)
+    } else {
+      document.body.style.overflow = ''
     }
     return () => {
+      document.body.style.overflow = ''
       window.removeEventListener('keydown', handleKeyDown)
     }
   }, [isVideoModalOpen])
@@ -198,8 +202,8 @@ export default function LandingPage() {
         console.error('Session check failed:', err)
       } finally {
         setCheckingSession(false)
-        setIsEntering(true)
         setTimeout(() => setLoaderVisible(false), 900)
+        setTimeout(() => setIsEntranceFinished(true), 1100)
       }
     }
     checkSession()
@@ -266,11 +270,11 @@ export default function LandingPage() {
   const isPerfectMatch = activeMatch.teaches === selectedLearn && activeMatch.learns === selectedTeach
 
   return (
-    <div className="relative min-h-screen bg-background text-foreground font-sans antialiased select-none overflow-x-hidden">
+    <div className="relative min-h-screen bg-background text-foreground font-sans antialiased select-none">
       {/* Curtain Loading Overlay */}
       {loaderVisible && (
         <div
-          className={`fixed inset-0 z-50 flex items-center justify-center bg-background text-foreground transition-transform duration-800 ${
+          className={`fixed inset-0 z-[60] flex items-center justify-center bg-background text-foreground transition-transform duration-800 pointer-events-none ${
             !checkingSession ? '-translate-y-full' : 'translate-y-0'
           }`}
           style={{ transitionTimingFunction: 'cubic-bezier(0.76, 0, 0.24, 1)' }}
@@ -287,9 +291,11 @@ export default function LandingPage() {
       {/* Main Content with Z-Axis Depth Scale Entrance */}
       <div
         className={`min-h-screen transition-all duration-1000 ease-out origin-center ${
-          checkingSession
-            ? 'scale-[0.94] opacity-0 blur-xs'
-            : 'scale-100 opacity-100 blur-none'
+          !isEntranceFinished
+            ? checkingSession
+              ? 'scale-[0.94] opacity-0 blur-xs'
+              : 'scale-100 opacity-100 blur-none'
+            : ''
         }`}
       >
       <style>{`
@@ -988,14 +994,16 @@ export default function LandingPage() {
         </div>
       </footer>
 
-      {/* Video Modal / Lightbox */}
+      </div>
+
+      {/* Video Modal / Lightbox (Placed outside transform wrapper to guarantee fixed viewport positioning) */}
       {isVideoModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 sm:p-6 animate-in fade-in duration-200"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 sm:p-6 animate-in fade-in duration-200"
           onClick={() => setIsVideoModalOpen(false)}
         >
           <div
-            className="relative w-full max-w-4xl rounded-2xl overflow-hidden bg-card border border-border/80 shadow-2xl flex flex-col max-h-[90vh]"
+            className="relative w-full max-w-4xl rounded-2xl overflow-hidden bg-card border border-border/80 shadow-2xl flex flex-col max-h-[90vh] my-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
@@ -1024,7 +1032,6 @@ export default function LandingPage() {
           </div>
         </div>
       )}
-      </div>
     </div>
   )
 }
