@@ -18,6 +18,7 @@ export type Person = {
   profileVisibility?: 'public' | 'private'
   notificationPreference?: boolean
   appearancePreference?: 'light' | 'dark' | 'system'
+  accountRole?: string
 }
 
 export type Request = { id: string; senderId: string; receiverId: string; message: string; status: 'pending' | 'accepted' | 'rejected'; createdAt: number }

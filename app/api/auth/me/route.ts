@@ -21,6 +21,7 @@ export async function GET(req: NextRequest) {
       email: user.email,
       username: user.username,
       name: user.name || user.username,
+      role: user.role || 'user',
       profileImage: user.profileImage,
       bio: user.bio,
       about: user.about || '',

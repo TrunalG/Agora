@@ -17,7 +17,6 @@ import {
   Send,
   Settings,
   Shield,
-  ShieldCheck,
   UserRound,
   Users,
   X,
@@ -254,11 +253,14 @@ export default function AgoraApp() {
     const notificationPreference = userObj.notificationPreference !== false
     const initials = name.slice(0, 2).toUpperCase()
 
+    const accountRole = userObj.role || 'user'
+
     setMe({
       id,
       name,
       username,
       role: teaches[0] ? `${teaches[0]} Enthusiast` : 'Member',
+      accountRole,
       location,
       initials,
       tone: 'bg-primary text-primary-foreground',
@@ -977,22 +979,7 @@ export default function AgoraApp() {
     }
   }
 
-  async function handleMakeMeAdmin() {
-    try {
-      const res = await fetch('/api/admin/make-me-admin', { method: 'POST' })
-      const data = await res.json()
-      if (res.ok) {
-        notify('Success! You are now an Admin. Opening Admin Panel...')
-        setTimeout(() => {
-          window.location.href = '/admin'
-        }, 1000)
-      } else {
-        notify(data.error || 'Failed to activate admin')
-      }
-    } catch {
-      notify('Network error')
-    }
-  }
+
 
   async function saveProfile(updated: typeof myProfileData) {
     try {
@@ -1841,21 +1828,17 @@ export default function AgoraApp() {
                       </div>
 
                       {/* Admin Options */}
-                      <div className="pt-2 border-t border-border space-y-1.5 text-xs text-foreground font-semibold">
-                        <p className="text-muted-foreground font-normal text-[10px]">Admin Controls</p>
-                        <button
-                          onClick={handleMakeMeAdmin}
-                          className="w-full text-left py-1 text-xs text-primary font-bold hover:underline flex items-center gap-2"
-                        >
-                          <ShieldCheck className="size-3.5 text-primary" /> Activate Admin Access
-                        </button>
-                        <a
-                          href="/admin"
-                          className="w-full text-left py-1 text-xs text-muted-foreground hover:underline flex items-center gap-2"
-                        >
-                          <Shield className="size-3.5 text-muted-foreground" /> Open Admin Panel (/admin)
-                        </a>
-                      </div>
+                      {me.accountRole === 'admin' && (
+                        <div className="pt-2 border-t border-border space-y-1.5 text-xs text-foreground font-semibold">
+                          <p className="text-muted-foreground font-normal text-[10px]">Admin Controls</p>
+                          <a
+                            href="/admin"
+                            className="w-full text-left py-1 text-xs text-muted-foreground hover:underline flex items-center gap-2"
+                          >
+                            <Shield className="size-3.5 text-muted-foreground" /> Open Admin Panel (/admin)
+                          </a>
+                        </div>
+                      )}
 
                       {/* Sign Out */}
                       <div className="pt-2 border-t border-border space-y-1.5 text-xs text-foreground font-semibold">
