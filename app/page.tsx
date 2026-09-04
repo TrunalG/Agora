@@ -8,7 +8,8 @@ import {
   Menu,
   X,
   ArrowUpRight,
-  ArrowRightLeft
+  ArrowRightLeft,
+  Play
 } from 'lucide-react'
 
 // Professional members dataset for the Match Simulator
@@ -125,6 +126,7 @@ export default function LandingPage() {
   const router = useRouter()
   const [checkingSession, setCheckingSession] = useState(true)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false)
 
   // Interactive Sandbox state (initialized to Figma & Marketing, will auto-play to React & Design Systems on load)
   const [selectedLearn, setSelectedLearn] = useState('Figma')
@@ -133,6 +135,20 @@ export default function LandingPage() {
   // Timeline Scroll Tracking State
   const [scrollProgress, setScrollProgress] = useState(0)
   const timelineRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsVideoModalOpen(false)
+      }
+    }
+    if (isVideoModalOpen) {
+      window.addEventListener('keydown', handleKeyDown)
+    }
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isVideoModalOpen])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -387,12 +403,15 @@ export default function LandingPage() {
                   Find Your Skill Match
                   <ArrowRight className="ml-2 size-4 group-hover:translate-x-0.5 transition-transform" />
                 </Link>
-                <Link
-                  href="/app"
-                  className="inline-flex h-11 sm:min-w-[160px] items-center justify-center rounded-lg border border-border bg-card px-5 text-sm font-semibold text-foreground hover:bg-muted/20 transition-all cursor-pointer active:scale-[0.98]"
+                <button
+                  onClick={() => setIsVideoModalOpen(true)}
+                  className="inline-flex h-11 sm:min-w-[160px] items-center justify-center gap-2 rounded-lg border border-border bg-card px-5 text-sm font-semibold text-foreground hover:bg-muted/30 hover:border-primary/30 transition-all cursor-pointer active:scale-[0.98] shadow-xs group"
                 >
-                  Browse Members
-                </Link>
+                  <div className="flex size-6 items-center justify-center rounded-full bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                    <Play className="size-3.5 fill-current ml-0.5" />
+                  </div>
+                  <span>Watch Video</span>
+                </button>
               </div>
             </div>
 
@@ -952,6 +971,51 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+
+      {/* Video Modal / Lightbox */}
+      {isVideoModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 sm:p-6 animate-in fade-in duration-200"
+          onClick={() => setIsVideoModalOpen(false)}
+        >
+          <div
+            className="relative w-full max-w-4xl rounded-2xl overflow-hidden bg-card border border-border/80 shadow-2xl flex flex-col max-h-[90vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-5 py-3 border-b border-border bg-card/95">
+              <div className="flex items-center gap-2.5">
+                <div className="flex size-7 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <Play className="size-3.5 fill-current ml-0.5" />
+                </div>
+                <div>
+                  <span className="text-sm font-bold text-foreground block leading-none">Agora Platform Tour</span>
+                  <span className="text-[10px] text-muted-foreground">42 second video overview</span>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsVideoModalOpen(false)}
+                className="rounded-full p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors cursor-pointer"
+                aria-label="Close modal"
+              >
+                <X className="size-5" />
+              </button>
+            </div>
+
+            {/* Modal Video Player */}
+            <div className="relative bg-black flex items-center justify-center overflow-hidden">
+              <video
+                src="/tour-video.mp4"
+                controls
+                autoPlay
+                loop
+                playsInline
+                className="w-full h-auto max-h-[75vh] object-contain"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
